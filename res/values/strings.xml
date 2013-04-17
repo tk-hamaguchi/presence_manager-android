@@ -2,6 +2,11 @@
 <resources>
 
     <string name="app_name">PresenceManager</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">タグの初期化</string>
+    <string name="tf_complete">タグの準備が完了しました</string>
+    <string name="tf_faled">タグの発行に失敗しました</string>
+    <string name="tf_please_tag">タグを翳してください</string>
+    <string name="tf_writing">タグ発行中...</string>
+    <string name="tf_c_write">タグを初期化する</string>
 
 </resources>

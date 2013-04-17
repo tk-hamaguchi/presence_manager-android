@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.Xml.Encoding;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -52,7 +53,6 @@ public class LoginActivity extends Activity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.login, menu);
 		return true;
 	}
@@ -67,6 +67,18 @@ public class LoginActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		nfcAdapter.disableForegroundDispatch(this);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId()){
+		case R.id.action_settings:
+			Intent it = new Intent(this, TagFormatActivity.class);
+			startActivity(it);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 	
 	@Override
