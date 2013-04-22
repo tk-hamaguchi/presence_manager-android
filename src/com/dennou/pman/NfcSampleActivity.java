@@ -1,4 +1,4 @@
-package com.dennnou.pman;
+package com.dennou.pman;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -17,12 +17,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.Xml.Encoding;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 
-public class LoginActivity extends Activity {
+import com.dennnou.pman.R;
+
+public class NfcSampleActivity extends Activity {
 	private static final String TAG = "LoginActivity";
 
 	private NfcAdapter nfcAdapter;
@@ -45,10 +44,6 @@ public class LoginActivity extends Activity {
 		filters = new IntentFilter[]{tech};
 		// Setup a tech list for all NfcF tags
 		techs = new String[][] { new String[] { MifareClassic.class.getName() } };
-		
-		//View
-		Button btWrite = (Button)findViewById(R.id.bt_write);
-		btWrite.setOnClickListener(onWriteClick);
 	}
 
 	@Override
@@ -68,19 +63,7 @@ public class LoginActivity extends Activity {
 		super.onPause();
 		nfcAdapter.disableForegroundDispatch(this);
 	}
-	
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch(item.getItemId()){
-		case R.id.action_settings:
-			Intent it = new Intent(this, TagFormatActivity.class);
-			startActivity(it);
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
-	}
-	
+		
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
@@ -116,9 +99,6 @@ public class LoginActivity extends Activity {
 		
 		@Override
 		public void onClick(View v) {
-			EditText etUri = (EditText)findViewById(R.id.et_uri);
-			String uri = etUri.getText().toString();
-			writeUriToTag(uri);
 		}
 	};
 }

@@ -2,11 +2,26 @@
 <resources>
 
     <string name="app_name">PresenceManager</string>
-    <string name="action_settings">タグの初期化</string>
-    <string name="tf_complete">タグの準備が完了しました</string>
-    <string name="tf_faled">タグの発行に失敗しました</string>
     <string name="tf_please_tag">タグを翳してください</string>
     <string name="tf_writing">タグ発行中...</string>
     <string name="tf_c_write">タグを初期化する</string>
-
+    <string name="tf_reflesh">更新</string>
+    <string name="tf_msg_write">タグをかざしてください</string>
+    <string name="tf_msg_failed">発行に失敗しました</string>
+    <string name="tf_msg_complete">発行完了！</string>
+    
+    <string name="c_login_uri">http://keymotest.ddo.jp:3000/auth/google</string>
+    <string name="c_button">button</string>
+    <string name="c_ok">OK</string>
+    <string name="c_cancel">Cancel</string>
+    
+    <string name="lo_menu_tag">タグの発行</string>
+    <string name="lo_menu_config">初期設定</string>
+    <string name="lo_c_sit">着席！</string>
+    <string name="lo_logout">ログアウト</string>
+    <string name="lo_c_room">部屋番号</string>
+    <string name="lo_c_seat">座席番号</string>
+    <string name="lo_msg_please_touch">もう一度タッチしてください</string>
+    <string name="lo_msg_invalid_tag">出席用タグではありません。</string>
+    
 </resources>
