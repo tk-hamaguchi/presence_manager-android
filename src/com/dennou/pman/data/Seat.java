@@ -22,6 +22,13 @@ public class Seat {
 	public Seat() {
 	}
 	
+	public Seat(int id, int roomId, String name, String secret){
+		this.id = id;
+		this.roomId = roomId;
+		this.name = name;
+		this.secret = secret;
+	}
+	
 	public Seat(Cursor c) {
 		id = c.getInt(c.getColumnIndex(ID));
 		roomId = c.getInt(c.getColumnIndex(ROOM_ID));

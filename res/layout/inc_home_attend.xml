@@ -12,27 +12,34 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/lo_c_account" />
+            android:text="@string/lo_c_room"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView
-            android:id="@+id/tv_account"
-            android:layout_width="wrap_content"
+            android:id="@+id/tv_name"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/lo_c_account"
+            android:text="Large Text"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/lo_c_log" />
+            android:text="@string/lo_c_seat"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
 
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Large Text"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
     </LinearLayout>
 
-    <ListView
-        android:id="@+id/lb_log"
+    <Button
+        android:id="@+id/bt_sit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1" >
-    </ListView>
+        android:text="@string/lo_c_sit" />
 
 </LinearLayout>

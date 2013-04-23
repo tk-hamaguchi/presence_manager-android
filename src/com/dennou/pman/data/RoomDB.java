@@ -53,7 +53,7 @@ public class RoomDB extends SQLiteOpenHelper {
 								));
 				
 				for(int i=0;i<10; i++){
-					Room room = new Room();
+					Venue room = new Venue();
 					room.setId(i);
 					room.setName(String.format("%d号室", i));
 					room.insert(db);

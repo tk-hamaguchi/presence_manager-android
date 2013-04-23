@@ -2,9 +2,7 @@ package com.dennou.pman;
 
 import java.util.List;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,6 +10,7 @@ import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.MifareClassic;
+import android.nfc.tech.MifareUltralight;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.os.AsyncTask;
@@ -27,15 +26,15 @@ import android.widget.ListView;
 import android.widget.Spinner;
 
 import com.dennnou.pman.R;
-import com.dennou.pman.data.Room;
 import com.dennou.pman.data.RoomDB;
 import com.dennou.pman.data.Seat;
+import com.dennou.pman.data.TempData;
+import com.dennou.pman.data.Venue;
+import com.dennou.pman.logic.LoadVenueTask;
 import com.dennou.pman.nfc.PmTag;
 import com.esp.common.handler.AlertHandler;
-import com.esp.common.handler.IAlertActivity;
 
-@SuppressWarnings("deprecation")
-public class TagFormatActivity extends Activity implements IAlertActivity{
+public class TagFormatActivity extends BaseActivity{
 	private static final String TAG = "TagFormatActivity";
 
 	private AlertHandler alert;
@@ -48,7 +47,7 @@ public class TagFormatActivity extends Activity implements IAlertActivity{
 	private Tag nfcTag;
 	
 	//Roomデータ
-	private ArrayAdapter<Room> aaRoom;
+	private ArrayAdapter<Venue> aaVenue;
 	private ArrayAdapter<Seat> aaSeat;
 	
 	@Override
@@ -69,19 +68,14 @@ public class TagFormatActivity extends Activity implements IAlertActivity{
 			
 			// Setup a tech list for MifareaClassic tags
 			techs = new String[][] { 
-					new String[]{MifareClassic.class.getName()},
 					new String[]{Ndef.class.getName()},
 					new String[]{NdefFormatable.class.getName()} };
 		}
 		
-		//View
-		//Button btWrite = (Button)findViewById(R.id.bt_write);
-		//btWrite.setOnClickListener(onWriteClick);
-		
 		//List
-		aaRoom = new ArrayAdapter<Room>(this, android.R.layout.simple_list_item_1);
+		aaVenue = new ArrayAdapter<Venue>(this, android.R.layout.simple_list_item_1);
 		Spinner spRoom = (Spinner)findViewById(R.id.sp_room);
-		spRoom.setAdapter(aaRoom);
+		spRoom.setAdapter(aaVenue);
 		spRoom.setOnItemSelectedListener(spItemSelected);
 		
 		aaSeat = new ArrayAdapter<Seat>(this, android.R.layout.simple_list_item_1);
@@ -109,8 +103,17 @@ public class TagFormatActivity extends Activity implements IAlertActivity{
 		super.onNewIntent(intent);
 		setIntent(intent);
 		if(NfcAdapter.ACTION_TECH_DISCOVERED.equals(intent.getAction())){
-			nfcTag = (Tag)intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-			Log.d(TAG, nfcTag.toString());
+			Tag tag = (Tag)intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+			if(MifareClassic.get(tag)!=null || MifareUltralight.get(tag)!=null){
+				alert.obtainMessage(AlertHandler.ID_SHOW_DLG,
+						R.string.tf_msg_unsupport_tag, 0).sendToTarget();
+				return;
+			}else if(tag != null){
+				nfcTag = tag;
+				alert.obtainMessage(AlertHandler.ID_SHOW_TOAST,
+						R.string.tf_msg_got_tag, 0).sendToTarget();
+				Log.d(TAG, nfcTag.toString());
+			}
 		}else{
 			Log.d(TAG, intent.getAction());
 		}
@@ -120,29 +123,19 @@ public class TagFormatActivity extends Activity implements IAlertActivity{
 	protected void onStart() {
 		super.onStart();
 		
-		RoomDB db = new RoomDB(this, RoomDB.ADMIN_DB);
-		try{
-			db.setWritableDb();
-			List<Room>roomList = Room.list(db.getDb());
-			for(Room room:roomList){
-				aaRoom.add(room);
-			}
-			
-			if(roomList.size()>0){
-				for(Seat seat :Seat.list(db.getDb(), roomList.get(0).getId())){
-					aaSeat.add(seat);
-				}
-			}
-		}finally{
-			db.closeWithoutCommit();
+		if(TempData.getInstance(this).getAuthToken()==null){
+			finish();
+			return;
 		}
+		
+		setInitData();
 	}
 
 	private AdapterView.OnItemSelectedListener spItemSelected = new OnItemSelectedListener() {
 
 		@Override
 		public void onItemSelected(AdapterView<?> av, View v, int arg2, long id) {
-			Room room = (Room)av.getSelectedItem();
+			Venue room = (Venue)av.getSelectedItem();
 			if(room != null)
 				setSeat(room.getId());
 		}
@@ -163,6 +156,46 @@ public class TagFormatActivity extends Activity implements IAlertActivity{
 			}
 		}finally{
 			db.closeWithoutCommit();
+		}
+	}
+	
+	private void setInitData(){
+		RoomDB db = new RoomDB(this, RoomDB.ADMIN_DB);
+		try{
+			db.setWritableDb();
+			List<Venue>roomList = Venue.list(db.getDb());
+			for(Venue room:roomList){
+				aaVenue.add(room);
+			}
+			db.closeWithoutCommit();
+		}finally{
+			db.closeWithoutCommit();
+		}
+		
+		if(aaVenue.getCount()==0){
+			loadVenue();
+		}else{
+			loadVenue();
+		}
+	}
+	
+	private void loadVenue(){
+		alert.obtainMessage(AlertHandler.ID_SHOW_MSG, R.string.tf_msg_comm, 0).sendToTarget();
+		
+		LoadVenueTask task = new LoadVenueTask(this);
+		task.execute(new String[]{});
+		try {
+			if(task.get()){
+				alert.obtainMessage(AlertHandler.ID_DISMISS).sendToTarget();
+				aaVenue.clear();
+				for(Venue v:task.getVenueList()){
+					aaVenue.add(v);
+				}
+			}else{
+				alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.tf_msg_com_error, 0).sendToTarget();
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -211,31 +244,5 @@ public class TagFormatActivity extends Activity implements IAlertActivity{
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	@Override
-	public void showMessage(int id, String message) {
-		try {
-			if(message != null){
-				Bundle bundle = new Bundle();
-				bundle.putString(AlertHandler.KEY_MESSAGE, message);
-				showDialog(id, bundle);
-			}else{
-				dismissDialog(id);
-			}
-		} catch (Exception e) {
-		}
-	}
-	
-	@Override
-	protected Dialog onCreateDialog(int id, Bundle args) {
-		super.onCreateDialog(id,args);
-		return AlertHandler.getDialog(id, this, args);
-	}
-	
-	@Override
-	protected void onPrepareDialog(int id, Dialog dialog, Bundle args) {
-		AlertHandler.prepareDialog(id, dialog, args);
-        super.onPrepareDialog(id, dialog);
 	}
 }

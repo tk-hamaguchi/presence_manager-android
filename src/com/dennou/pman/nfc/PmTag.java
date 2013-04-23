@@ -54,15 +54,16 @@ public class PmTag {
     public static PmTag get(Ndef ndef){
     	
 		try {
-			NdefRecord record = ndef.getCachedNdefMessage().getRecords()[0];
-			if(record.getTnf() == NdefRecord.TNF_WELL_KNOWN &&
-					record.getType()[0] == 'U'){
-				Uri uri = Uri.parse(new String(record.getPayload(),
-						Encoding.US_ASCII.toString()));
-				if(uri.getHost() == Var.SV_HOST){
-					PmTag tag = new PmTag(ndef.getTag());
-					tag.setSeatId(Integer.parseInt(uri.getQueryParameter("code")));
-					return tag;
+			for(NdefRecord record : ndef.getCachedNdefMessage().getRecords()){
+				if(record.getTnf() == NdefRecord.TNF_WELL_KNOWN &&
+						record.getType()[0] == 'U'){
+					Uri uri = Uri.parse(new String(record.getPayload(),
+							Encoding.US_ASCII.toString()));
+					if(Var.SV_HOST.equals(uri.getHost())){
+						PmTag tag = new PmTag(ndef.getTag());
+						tag.setSeatId(Integer.parseInt(uri.getQueryParameter("code")));
+						return tag;
+					}
 				}
 			}
 			return null;
