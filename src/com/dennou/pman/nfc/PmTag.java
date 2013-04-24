@@ -39,7 +39,7 @@ public class PmTag {
     private static final byte[] nfcSector = new byte[]{1,2,3,4};
     private static final byte[] mySector = new byte[]{5,6,7,8,9,10,11,12,13,14,15};
     
-    private static final String URL_TAG = String.format("%s://%s/seminars/attend?code=%s", Var.SV_SCHEME, Var.SV_HOST, "%s");
+    private static final String URL_TAG = String.format("%s://%s/seminars/attend?t=%s&s=%s", Var.SV_SCHEME, Var.SV_HOST, "%s", "%s");
     private static final String URL_SECURE = String.format("%s://%s/seminars/attend?code=%s&sequence=%s", Var.SV_SCHEME, Var.SV_HOST, "%s", "%s");
     
     private Tag tag;
@@ -161,7 +161,7 @@ public class PmTag {
     @SuppressLint("DefaultLocale")
 	public boolean writeSeatTag(Seat seat){
 		try {
-			String uri = String.format(Locale.US, URL_TAG, seat.getId());
+			String uri = String.format(Locale.US, URL_TAG, seat.getId(), seat.getSign());
 			byte[] uriData = uri.getBytes(Charset.forName(Encoding.US_ASCII.name()));
 			ByteBuffer bb = ByteBuffer.allocate(uriData.length + 1);
 			bb.put((byte)0);

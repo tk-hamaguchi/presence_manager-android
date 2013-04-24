@@ -8,7 +8,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 public class Venue {
-	private static final String TABLE = "rooms";
+	private static final String TABLE = "venues";
 	private static final String ID = "id";
 	private static final String NAME = "name";
 	
@@ -39,7 +39,8 @@ public class Venue {
 	}
 	
 	public static Venue find(SQLiteDatabase db, int id){
-		Cursor c = db.query(TABLE, new String[]{ID,NAME}, null, null, null, null, null);
+		Cursor c = db.query(TABLE, new String[]{ID,NAME}, "id=?",
+					new String[]{String.valueOf(id)}, null, null, null);
 		if(c.moveToNext()){
 			return new Venue(c);
 		}

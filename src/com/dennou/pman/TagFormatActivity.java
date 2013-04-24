@@ -9,27 +9,29 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
-import android.nfc.tech.MifareClassic;
-import android.nfc.tech.MifareUltralight;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 
 import com.dennnou.pman.R;
-import com.dennou.pman.data.RoomDB;
 import com.dennou.pman.data.Seat;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Venue;
+import com.dennou.pman.data.VenueDB;
+import com.dennou.pman.logic.LoadSeatTask;
 import com.dennou.pman.logic.LoadVenueTask;
 import com.dennou.pman.nfc.PmTag;
 import com.esp.common.handler.AlertHandler;
@@ -38,17 +40,18 @@ public class TagFormatActivity extends BaseActivity{
 	private static final String TAG = "TagFormatActivity";
 
 	private AlertHandler alert;
+	private AlertDialog dialog;
 	
 	//NFC関係
 	private NfcAdapter nfcAdapter;
 	private PendingIntent pendingIntent;
 	private IntentFilter[] filters;
 	private String[][] techs;
-	private Tag nfcTag;
 	
 	//Roomデータ
 	private ArrayAdapter<Venue> aaVenue;
 	private ArrayAdapter<Seat> aaSeat;
+	private Seat targetSeat;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
@@ -82,6 +85,9 @@ public class TagFormatActivity extends BaseActivity{
 		ListView lvSeat = (ListView)findViewById(R.id.lv_seat);
 		lvSeat.setAdapter(aaSeat);
 		lvSeat.setOnItemClickListener(lvItemClick);
+		
+		Button btRefresh = (Button)findViewById(R.id.bt_room_refresh);
+		btRefresh.setOnClickListener(btRefreshClick);
 	}
 	
 	@Override
@@ -99,20 +105,26 @@ public class TagFormatActivity extends BaseActivity{
 	}
 	
 	@Override
+	protected void onStop() {
+		super.onStop();
+		if(dialog != null && dialog.isShowing())
+			dialog.dismiss();
+		targetSeat = null;
+	}
+	
+	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
 		setIntent(intent);
 		if(NfcAdapter.ACTION_TECH_DISCOVERED.equals(intent.getAction())){
 			Tag tag = (Tag)intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-			if(MifareClassic.get(tag)!=null || MifareUltralight.get(tag)!=null){
-				alert.obtainMessage(AlertHandler.ID_SHOW_DLG,
-						R.string.tf_msg_unsupport_tag, 0).sendToTarget();
-				return;
+			if(Ndef.get(tag)!=null || NdefFormatable.get(tag)!=null){
+				if(targetSeat != null)
+					writeTag(tag);
 			}else if(tag != null){
-				nfcTag = tag;
 				alert.obtainMessage(AlertHandler.ID_SHOW_TOAST,
-						R.string.tf_msg_got_tag, 0).sendToTarget();
-				Log.d(TAG, nfcTag.toString());
+						R.string.tf_msg_unsupport_tag, 0).sendToTarget();
+				Log.d(TAG, tag.toString());
 			}
 		}else{
 			Log.d(TAG, intent.getAction());
@@ -131,6 +143,22 @@ public class TagFormatActivity extends BaseActivity{
 		setInitData();
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.tag_format, menu);
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if(item.getItemId() == R.id.menu_reload){
+			loadVenue();
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
 	private AdapterView.OnItemSelectedListener spItemSelected = new OnItemSelectedListener() {
 
 		@Override
@@ -148,7 +176,7 @@ public class TagFormatActivity extends BaseActivity{
 	
 	private void setSeat(int roomId){
 		aaSeat.clear();
-		RoomDB db = new RoomDB(this, RoomDB.ADMIN_DB);
+		VenueDB db = new VenueDB(this, VenueDB.ADMIN_DB);
 		try{
 			db.setReadableDb();
 			for(Seat seat:Seat.list(db.getDb(), roomId)){
@@ -160,7 +188,7 @@ public class TagFormatActivity extends BaseActivity{
 	}
 	
 	private void setInitData(){
-		RoomDB db = new RoomDB(this, RoomDB.ADMIN_DB);
+		VenueDB db = new VenueDB(this, VenueDB.ADMIN_DB);
 		try{
 			db.setWritableDb();
 			List<Venue>roomList = Venue.list(db.getDb());
@@ -173,8 +201,6 @@ public class TagFormatActivity extends BaseActivity{
 		}
 		
 		if(aaVenue.getCount()==0){
-			loadVenue();
-		}else{
 			loadVenue();
 		}
 	}
@@ -202,44 +228,72 @@ public class TagFormatActivity extends BaseActivity{
 	private OnItemClickListener lvItemClick = new OnItemClickListener() {
 		@Override
 		public void onItemClick(AdapterView<?> av, View v, int position, long id) {
-			final Seat seat = aaSeat.getItem(position);
+			targetSeat = aaSeat.getItem(position);
 			AlertDialog.Builder ab = new AlertDialog.Builder(TagFormatActivity.this);
 			ab.setMessage(R.string.tf_msg_write);
-			ab.setPositiveButton(R.string.c_ok, new DialogInterface.OnClickListener(){
+			ab.setIcon(android.R.drawable.ic_popup_disk_full);
+			ab.setNegativeButton(R.string.c_cancel, new DialogInterface.OnClickListener() {
+				
 				@Override
-				public void onClick(DialogInterface arg0, int arg1) {
-					try{
-						writeTag(seat);
-					}catch(Exception e){
-						e.printStackTrace();
-						Message.obtain(alert, AlertHandler.ID_SHOW_DLG, R.string.tf_msg_write, 0).sendToTarget();
-					}
+				public void onClick(DialogInterface dialog, int which) {
+					targetSeat = null;
+					dialog.dismiss();
 				}
 			});
-			ab.setNegativeButton(R.string.c_cancel, null);
-			ab.show();
+			dialog = ab.show();
 		}
 	};
 	
 	
-	private void writeTag(Seat seat) throws Exception{
+	private void writeTag(Tag tag){
 		//Tag初期化
-		final Seat ts = seat;
 		AsyncTask<Tag, Void, Boolean> atask = new AsyncTask<Tag, Void, Boolean>(){
 			@Override
 			protected Boolean doInBackground(Tag... params) {
 				AlertHandler.wait(100);
 				PmTag pmTag = new PmTag(params[0]);
-				return (Boolean)pmTag.writeSeatTag(ts);
+				return (Boolean)pmTag.writeSeatTag(targetSeat);
 			}
 		};
 		try {
 			Message.obtain(alert, AlertHandler.ID_SHOW_MSG, R.string.tf_writing, 0).sendToTarget();
-			atask.execute(new Tag[]{nfcTag});
+			atask.execute(new Tag[]{tag});
 			if(atask.get()){
 				Message.obtain(alert, AlertHandler.ID_SHOW_DLG, R.string.tf_msg_complete, 0).sendToTarget();
 			}else{
 				Message.obtain(alert, AlertHandler.ID_SHOW_DLG, R.string.tf_msg_failed, 0).sendToTarget();
+			}
+			dialog.dismiss();
+			targetSeat = null;
+		}catch (Exception e) {
+			e.printStackTrace();
+			targetSeat = null;
+		}
+	}
+	
+	private View.OnClickListener btRefreshClick = new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			Spinner spVenue = (Spinner)findViewById(R.id.sp_room);
+			Venue venue = (Venue)spVenue.getSelectedItem();
+			if(venue != null){
+				loadSeat(venue);
+			}
+		}
+	};
+	
+	private void loadSeat(Venue venue){
+		try {
+			LoadSeatTask task = new LoadSeatTask(this, venue.getId());
+			task.execute(new String[]{});
+			if(task.get()){
+				alert.obtainMessage(AlertHandler.ID_DISMISS).sendToTarget();
+				aaSeat.clear();
+				for(Seat s:task.getSeatList()){
+					aaSeat.add(s);
+				}
+			}else{
+				alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.tf_msg_com_error, 0).sendToTarget();
 			}
 		}catch (Exception e) {
 			e.printStackTrace();

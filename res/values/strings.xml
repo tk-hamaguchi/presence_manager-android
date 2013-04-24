@@ -13,6 +13,7 @@
     <string name="tf_msg_got_tag">書き込み準備ができました</string>
     <string name="tf_msg_com_error">通信を確認してください</string>
     <string name="tf_msg_comm">データ通信中</string>
+    <string name="tf_menu_reload">部屋リスト更新</string>
     
     <string name="c_button">button</string>
     <string name="c_ok">OK</string>

@@ -15,7 +15,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.dennou.pman.data.RoomDB;
+import com.dennou.pman.data.VenueDB;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Var;
 import com.dennou.pman.data.Venue;
@@ -41,21 +41,22 @@ public class LoadVenueTask extends AsyncTask<String, Void, Boolean> {
 			HttpResponse response = client.execute( get );
 			int status = response.getStatusLine().getStatusCode();
 			
-			if ( status == HttpStatus.SC_OK ){
-		        String body = EntityUtils.toString(response.getEntity(), Var.CHARSET);
-		        JSONObject json = new JSONObject(body);
-				JSONArray venueArray = json.getJSONArray("venue");
-				for(int i=0;i<venueArray.length(); i++){
-					JSONObject obj = venueArray.getJSONObject(i);
-					int id = obj.getInt("id");
-					String name = obj.getString("name");
-					Venue venue = new Venue(id, name);
-					Log.d(TAG, venue.getId() + venue.getName());
-					venueList.add(venue);
-				}
+			if ( status != HttpStatus.SC_OK )
+				return Boolean.FALSE;
+			
+	        String body = EntityUtils.toString(response.getEntity(), Var.CHARSET);
+	        JSONObject json = new JSONObject(body);
+			JSONArray venueArray = json.getJSONArray("venue");
+			for(int i=0;i<venueArray.length(); i++){
+				JSONObject obj = venueArray.getJSONObject(i);
+				int id = obj.getInt("id");
+				String name = obj.getString("name");
+				Venue venue = new Venue(id, name);
+				Log.d(TAG, venue.getId() + venue.getName());
+				venueList.add(venue);
 			}
 			
-			RoomDB db = new RoomDB(context, RoomDB.ADMIN_DB); 
+			VenueDB db = new VenueDB(context, VenueDB.ADMIN_DB); 
 			try{
 				db.setWritableDb();
 				Venue.delete(db.getDb());
@@ -65,11 +66,11 @@ public class LoadVenueTask extends AsyncTask<String, Void, Boolean> {
 			}finally{
 				db.closeWithoutCommit();
 			}
-			return Boolean.valueOf(true);
+			return Boolean.TRUE;
 		}  catch (Exception e) {
 			e.printStackTrace();
+			return Boolean.FALSE;
 		}
-		return Boolean.valueOf(false);
 	}
 	
 	public List<Venue> getVenueList() {

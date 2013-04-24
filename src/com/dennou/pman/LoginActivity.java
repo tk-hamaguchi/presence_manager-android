@@ -18,7 +18,7 @@ import android.widget.ViewFlipper;
 
 import com.dennnou.pman.R;
 import com.dennou.pman.data.Venue;
-import com.dennou.pman.data.RoomDB;
+import com.dennou.pman.data.VenueDB;
 import com.dennou.pman.data.Seat;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Var;
@@ -84,12 +84,12 @@ public class LoginActivity extends BaseActivity{
 	}
 	
 	private void handlePmTag(PmTag pmTag){
-		RoomDB db = new RoomDB(this, RoomDB.USER_DB);
+		VenueDB db = new VenueDB(this, VenueDB.USER_DB);
 		try{
 			db.setReadableDb();
 			Seat seat = Seat.find(db.getDb(), pmTag.getSeatId());
 			if(seat != null){
-				Venue room = Venue.find(db.getDb(), seat.getRoomId());
+				Venue room = Venue.find(db.getDb(), seat.getVenueId());
 				setSeatInfo(room, seat);
 			}else{
 				//情報取得

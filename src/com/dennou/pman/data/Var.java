@@ -19,5 +19,7 @@ public class Var {
 	
 	//venues
 	public static final String VENUE_URI = String.format("%s://%s/api/venues", SV_SCHEME, SV_HOST);
+	//Seat
+	public static final String SEAT_URI = String.format("%s://%s/api/seats?venue=%s", SV_SCHEME, SV_HOST, "%s");
 	
 }

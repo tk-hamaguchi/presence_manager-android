@@ -1,0 +1,4 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:id="@+id/menu_reload" android:title="@string/tf_menu_reload"></item>
+
+</menu>

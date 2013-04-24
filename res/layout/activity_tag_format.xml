@@ -21,7 +21,7 @@
             android:layout_weight="1" />
 
         <Button
-            android:id="@+id/bt_room_reflesh"
+            android:id="@+id/bt_room_refresh"
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
