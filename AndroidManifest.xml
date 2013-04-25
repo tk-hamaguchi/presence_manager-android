@@ -33,6 +33,7 @@
         </activity>
         <activity android:name="com.dennou.pman.TagFormatActivity" >
         </activity>
+        <activity android:name="com.dennou.pman.AttendActivity"></activity>
     </application>
 
 </manifest>

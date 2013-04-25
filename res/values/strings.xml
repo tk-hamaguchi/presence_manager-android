@@ -18,11 +18,12 @@
     <string name="c_button">button</string>
     <string name="c_ok">OK</string>
     <string name="c_cancel">Cancel</string>
+    <string name="msg_comm_get">データ取得中</string>
+    <string name="msg_comm_error">データ取得に失敗しました</string>
     
     <string name="lo_menu_tag">タグの発行</string>
     <string name="lo_menu_config">初期設定</string>
     <string name="lo_menu_logout">ログアウト</string>
-    <string name="lo_c_sit">着席！</string>
     <string name="lo_c_room">部屋番号</string>
     <string name="lo_c_seat">座席番号</string>
     <string name="lo_c_account">ログイン中</string>
@@ -31,5 +32,14 @@
     <string name="lo_msg_invalid_tag">出席用タグではありません。</string>
     <string name="lo_msg_login_failed">ログインに失敗しました</string>
     <string name="lo_msg_login_complete">ログインが完了しました</string>
+
+    <string name="at_c_venue">会場</string>
+    <string name="at_c_seat">座席番号</string>
+    <string name="at_c_event">イベント</string>
+    <string name="at_c_date">日時</string>
+    <string name="at_c_detail">詳細</string>
+    <string name="at_c_attend">出席</string>
+    <string name="at_msg_no_seminar">現在、この会場で開催中のイベントはありません</string>
+    <string name="at_msg_comm_error">データ取得に失敗しました。もう一度タッチしてください。</string>
     
 </resources>

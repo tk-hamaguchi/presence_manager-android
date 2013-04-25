@@ -15,11 +15,10 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.dennou.pman.data.VenueDB;
+import com.dennou.pman.data.Seat;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Var;
-import com.dennou.pman.data.Venue;
-import com.dennou.pman.data.Seat;
+import com.dennou.pman.data.VenueDB;
 
 public class LoadSeatTask extends AsyncTask<String, Void, Boolean> {
 	private final static String TAG = "LoadSeatTask";

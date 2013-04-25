@@ -3,10 +3,6 @@ package com.dennou.pman;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
-import android.nfc.NfcAdapter;
-import android.nfc.Tag;
-import android.nfc.tech.Ndef;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -17,12 +13,8 @@ import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 import com.dennnou.pman.R;
-import com.dennou.pman.data.Venue;
-import com.dennou.pman.data.VenueDB;
-import com.dennou.pman.data.Seat;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Var;
-import com.dennou.pman.nfc.PmTag;
 import com.esp.common.handler.AlertHandler;
 
 public class LoginActivity extends BaseActivity{
@@ -34,7 +26,6 @@ public class LoginActivity extends BaseActivity{
 	private WebView webView;
 	private AlertHandler alert;
 	private TempData tempData;
-	private PmTag pmTag;
 	
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
@@ -55,77 +46,9 @@ public class LoginActivity extends BaseActivity{
 	@Override
 	protected void onStart() {
 		super.onStart();
-		Intent it = getIntent();
-		if(NfcAdapter.ACTION_NDEF_DISCOVERED.equals(it.getAction())){
-			handleNdef(it);
-			if(pmTag != null && pmTag.getSecret()!=null){
-				setView();
-			}else{
-				alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.lo_msg_please_touch, 0).sendToTarget();
-			}
-		}else{
-			setView();
-		}
+		setView();
 	}
-	
-	private void handleNdef(Intent it){
-		Tag tag = (Tag)it.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-		try {
-			pmTag = PmTag.get(Ndef.get(tag));
-			if(pmTag != null){
-				handlePmTag(pmTag);
-			}else{
-				
-			}
-			setView();
-		}  catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private void handlePmTag(PmTag pmTag){
-		VenueDB db = new VenueDB(this, VenueDB.USER_DB);
-		try{
-			db.setReadableDb();
-			Seat seat = Seat.find(db.getDb(), pmTag.getSeatId());
-			if(seat != null){
-				Venue room = Venue.find(db.getDb(), seat.getVenueId());
-				setSeatInfo(room, seat);
-			}else{
-				//情報取得
-				AsyncTask<String, Void, Boolean> at = new AsyncTask<String, Void, Boolean>(){
-					@Override
-					protected Boolean doInBackground(String... params) {
-						
-						return null;
-					}
-					
-					@Override
-					protected void onPostExecute(Boolean result) {
-						super.onPostExecute(result);
-						if(result){
-							
-						}else{
-							alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.lo_msg_invalid_tag, 0).sendToTarget();
-						}
-					}
-				};
-				at.execute(new String[]{});
-				at.get();
-			}
-			db.closeWithoutCommit();
-		}catch(Exception e){
-			
-		}
-	}
-	
-	private void setSeatInfo(Venue room, Seat seat){
-		TextView tvRoom = (TextView)findViewById(R.id.tv_name);
-		tvRoom.setText(room.getName());
-		TextView tvSeat = (TextView)findViewById(R.id.tv_name); 
-		tvSeat.setText(seat.getName());
-	}
-	
+		
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.login, menu);
@@ -136,11 +59,14 @@ public class LoginActivity extends BaseActivity{
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()){
 			case R.id.menu_tag_init:
-				Intent it = new Intent(this, TagFormatActivity.class);
-				startActivity(it);
+				Intent itTagFormat = new Intent(this, TagFormatActivity.class);
+				startActivity(itTagFormat);
 				return true;
 			case R.id.menu_logout:
 				logout();
+			case R.id.menu_config:
+				Intent itAttend = new Intent(this, AttendActivity.class);
+				startActivity(itAttend);
 		}
 		return super.onOptionsItemSelected(item);
 	}

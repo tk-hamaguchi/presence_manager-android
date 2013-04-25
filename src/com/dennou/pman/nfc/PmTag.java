@@ -1,5 +1,6 @@
 package com.dennou.pman.nfc;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Locale;
@@ -20,6 +21,8 @@ import com.dennou.pman.data.Var;
 
 public class PmTag {
 	private String TAG = "PmTag";
+	public static final String MIME = "application/com.dennou.pm";
+	
 	private static final byte[] madKeyA = new byte[]{(byte)0xA0, (byte)0xA1, (byte)0xA2, (byte)0xA3, (byte)0xA4, (byte)0xA5};
 	private static final byte[] madKeyB = new byte[]{(byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF};
 
@@ -39,35 +42,44 @@ public class PmTag {
     private static final byte[] nfcSector = new byte[]{1,2,3,4};
     private static final byte[] mySector = new byte[]{5,6,7,8,9,10,11,12,13,14,15};
     
-    private static final String URL_TAG = String.format("%s://%s/seminars/attend?t=%s&s=%s", Var.SV_SCHEME, Var.SV_HOST, "%s", "%s");
-    private static final String URL_SECURE = String.format("%s://%s/seminars/attend?code=%s&sequence=%s", Var.SV_SCHEME, Var.SV_HOST, "%s", "%s");
     
     private Tag tag;
     
-    private int seatId;
+    private int code;
     private String secret;
+    private String sign;
     
+    public PmTag() {
+	}
     public PmTag(Tag tag){
     	this.tag = tag;
     }
-    
-    public static PmTag get(Ndef ndef){
-    	
+        
+    public static PmTag get(NdefMessage ndef){
 		try {
-			for(NdefRecord record : ndef.getCachedNdefMessage().getRecords()){
+			PmTag pmTag = new PmTag();
+			for(NdefRecord record:ndef.getRecords()){
 				if(record.getTnf() == NdefRecord.TNF_WELL_KNOWN &&
-						record.getType()[0] == 'U'){
-					Uri uri = Uri.parse(new String(record.getPayload(),
-							Encoding.US_ASCII.toString()));
+					record.getType()!=null && record.getType()[0]=='U'){
+					Uri uri = Uri.parse(new String(record.getPayload(), Encoding.US_ASCII.toString()));
 					if(Var.SV_HOST.equals(uri.getHost())){
-						PmTag tag = new PmTag(ndef.getTag());
-						tag.setSeatId(Integer.parseInt(uri.getQueryParameter("code")));
-						return tag;
+						String code = uri.getQueryParameter(Var.ATTEND_PARAM_NFC_TAG);
+						pmTag.code = Integer.getInteger(code);
+						pmTag.sign = uri.getQueryParameter(Var.ATTEND_PARAM_SIGN);
+					}
+				}else if(record.getTnf() == NdefRecord.TNF_MIME_MEDIA && record.getType()!=null){
+					String type = new String(record.getType(),Encoding.US_ASCII.toString());
+					if(PmTag.MIME.equals(type)){
+						byte dataType = record.getPayload()[0];
+						if(dataType==0)
+							pmTag.secret = new String(record.getPayload(), 1, record.getPayload().length-1);
 					}
 				}
 			}
+			if(pmTag.sign !=null && pmTag.secret!=null)
+				return pmTag;
 			return null;
-		}  catch (Exception e) {
+		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -161,15 +173,19 @@ public class PmTag {
     @SuppressLint("DefaultLocale")
 	public boolean writeSeatTag(Seat seat){
 		try {
-			String uri = String.format(Locale.US, URL_TAG, seat.getId(), seat.getSign());
+			String uri = String.format(Locale.US, Var.ATTEND_URI, seat.getId(), seat.getSign());
 			byte[] uriData = uri.getBytes(Charset.forName(Encoding.US_ASCII.name()));
 			ByteBuffer bb = ByteBuffer.allocate(uriData.length + 1);
 			bb.put((byte)0);
 			bb.put(uriData);
 			
 			NdefRecord primary = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, new byte[]{'U'}, new byte[0], bb.array());
+			ByteBuffer bbSecret = ByteBuffer.allocate(seat.getSecret().getBytes(Encoding.US_ASCII.toString()).length + 1);
+			bbSecret.put((byte)0);
+			bbSecret.put(seat.getSecret().getBytes(Encoding.US_ASCII.toString()));
+			
 			NdefRecord secret = new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
-					"application/pm.secret".getBytes(Encoding.US_ASCII.toString()), new byte[0], seat.getSecret().getBytes(Encoding.US_ASCII.toString()));
+					MIME.getBytes(Encoding.US_ASCII.toString()), new byte[0], bbSecret.array());
 			
 			NdefMessage ndef = new NdefMessage(new NdefRecord[]{primary, secret});
 			
@@ -203,12 +219,12 @@ public class PmTag {
     	secret = new String(block, Encoding.US_ASCII.toString());
     }
     
-	public int getSeatId() {
-		return seatId;
+	public int getCode() {
+		return code;
 	}
 
-	public void setSeatId(int seatId) {
-		this.seatId = seatId;
+	public void setSode(int code) {
+		this.code = code;
 	}
 
 	public String getSecret() {
@@ -217,5 +233,13 @@ public class PmTag {
 
 	public void setSecret(String secret) {
 		this.secret = secret;
+	}
+
+	public String getSign() {
+		return sign;
+	}
+
+	public void setSign(String sign) {
+		this.sign = sign;
 	}
 }
