@@ -62,9 +62,9 @@ public class PmTag {
 				if(record.getTnf() == NdefRecord.TNF_WELL_KNOWN &&
 					record.getType()!=null && record.getType()[0]=='U'){
 					Uri uri = Uri.parse(new String(record.getPayload(), Encoding.US_ASCII.toString()));
-					if(Var.SV_HOST.equals(uri.getHost())){
+					if(Var.SV_HOST.startsWith(uri.getHost())){
 						String code = uri.getQueryParameter(Var.ATTEND_PARAM_NFC_TAG);
-						pmTag.code = Integer.getInteger(code);
+						pmTag.code = Integer.valueOf(code);
 						pmTag.sign = uri.getQueryParameter(Var.ATTEND_PARAM_SIGN);
 					}
 				}else if(record.getTnf() == NdefRecord.TNF_MIME_MEDIA && record.getType()!=null){

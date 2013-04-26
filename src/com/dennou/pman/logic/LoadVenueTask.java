@@ -24,6 +24,7 @@ public class LoadVenueTask extends AsyncTask<String, Void, Boolean> {
 	private final static String TAG = "LoadVenueTask";
 	private Context context;
 	private List<Venue> venueList;
+	private int statusCode;
 	
 	public LoadVenueTask(Context context) {
 		this.context = context;
@@ -39,9 +40,9 @@ public class LoadVenueTask extends AsyncTask<String, Void, Boolean> {
 			get.setHeader(Var.HEADER_AUTHORIZATION, bearer);
 			
 			HttpResponse response = client.execute( get );
-			int status = response.getStatusLine().getStatusCode();
+			statusCode = response.getStatusLine().getStatusCode();
 			
-			if ( status != HttpStatus.SC_OK )
+			if ( statusCode != HttpStatus.SC_OK )
 				return Boolean.FALSE;
 			
 	        String body = EntityUtils.toString(response.getEntity(), Var.CHARSET);
@@ -75,5 +76,8 @@ public class LoadVenueTask extends AsyncTask<String, Void, Boolean> {
 	
 	public List<Venue> getVenueList() {
 		return venueList;
+	}
+	public int getStatusCode(){
+		return statusCode;
 	}
 }

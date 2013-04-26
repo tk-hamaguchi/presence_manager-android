@@ -206,23 +206,41 @@ public class TagFormatActivity extends BaseActivity{
 	}
 	
 	private void loadVenue(){
-		alert.obtainMessage(AlertHandler.ID_SHOW_MSG, R.string.tf_msg_comm, 0).sendToTarget();
-		
-		LoadVenueTask task = new LoadVenueTask(this);
-		task.execute(new String[]{});
-		try {
-			if(task.get()){
-				alert.obtainMessage(AlertHandler.ID_DISMISS).sendToTarget();
-				aaVenue.clear();
-				for(Venue v:task.getVenueList()){
-					aaVenue.add(v);
+		LoadVenueTask task = new LoadVenueTask(this){
+			@Override
+			protected void onPostExecute(Boolean result) {
+				if(result){
+					alert.obtainMessage(AlertHandler.ID_DISMISS).sendToTarget();
+					aaVenue.clear();
+					for(Venue v:getVenueList()){
+						aaVenue.add(v);
+					}
+				}else{
+					if(getStatusCode() != 403){
+						alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.tf_msg_com_error, 0).sendToTarget();
+					}else{
+						showPleaseLogin();
+					}
 				}
-			}else{
-				alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.tf_msg_com_error, 0).sendToTarget();
 			}
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
+			
+		};
+		alert.obtainMessage(AlertHandler.ID_SHOW_MSG, R.string.tf_msg_comm, 0).sendToTarget();
+		task.execute(new String[]{});
+	}
+	
+	private void showPleaseLogin(){
+		AlertDialog.Builder ab= new AlertDialog.Builder(this);
+		ab.setPositiveButton(R.string.c_ok, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				finish();
+			}
+		});
+		ab.setTitle(R.string.app_name);
+		ab.setMessage(R.string.tf_msg_please_login);
+		ab.setCancelable(false);
+		ab.show();
 	}
 	
 	private OnItemClickListener lvItemClick = new OnItemClickListener() {
@@ -254,21 +272,20 @@ public class TagFormatActivity extends BaseActivity{
 				PmTag pmTag = new PmTag(params[0]);
 				return (Boolean)pmTag.writeSeatTag(targetSeat);
 			}
-		};
-		try {
-			Message.obtain(alert, AlertHandler.ID_SHOW_MSG, R.string.tf_writing, 0).sendToTarget();
-			atask.execute(new Tag[]{tag});
-			if(atask.get()){
-				Message.obtain(alert, AlertHandler.ID_SHOW_DLG, R.string.tf_msg_complete, 0).sendToTarget();
-			}else{
-				Message.obtain(alert, AlertHandler.ID_SHOW_DLG, R.string.tf_msg_failed, 0).sendToTarget();
+			
+			@Override
+			protected void onPostExecute(Boolean result) {
+				if(result){
+					Message.obtain(alert, AlertHandler.ID_SHOW_DLG, R.string.tf_msg_complete, 0).sendToTarget();
+				}else{
+					Message.obtain(alert, AlertHandler.ID_SHOW_DLG, R.string.tf_msg_failed, 0).sendToTarget();
+				}
+				dialog.dismiss();
+				targetSeat = null;
 			}
-			dialog.dismiss();
-			targetSeat = null;
-		}catch (Exception e) {
-			e.printStackTrace();
-			targetSeat = null;
-		}
+		};
+		Message.obtain(alert, AlertHandler.ID_SHOW_MSG, R.string.tf_writing, 0).sendToTarget();
+		atask.execute(new Tag[]{tag});
 	}
 	
 	private View.OnClickListener btRefreshClick = new View.OnClickListener() {
@@ -283,20 +300,26 @@ public class TagFormatActivity extends BaseActivity{
 	};
 	
 	private void loadSeat(Venue venue){
-		try {
-			LoadSeatTask task = new LoadSeatTask(this, venue.getId());
-			task.execute(new String[]{});
-			if(task.get()){
-				alert.obtainMessage(AlertHandler.ID_DISMISS).sendToTarget();
-				aaSeat.clear();
-				for(Seat s:task.getSeatList()){
-					aaSeat.add(s);
+		LoadSeatTask task = new LoadSeatTask(this, venue.getId()){
+			@Override
+			protected void onPostExecute(Boolean result) {
+				if(result){
+					alert.obtainMessage(AlertHandler.ID_DISMISS).sendToTarget();
+					aaSeat.clear();
+					for(Seat s:getSeatList()){
+						aaSeat.add(s);
+					}
+				}else{
+					if(getStatusCode() != 403){
+						alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.tf_msg_com_error, 0).sendToTarget();
+					}else{
+						showPleaseLogin();
+					}
 				}
-			}else{
-				alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.tf_msg_com_error, 0).sendToTarget();
 			}
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
+			
+		};
+		alert.obtainMessage(AlertHandler.ID_SHOW_MSG, R.string.tf_msg_comm, 0).sendToTarget();
+		task.execute(new String[]{});
 	}
 }

@@ -36,7 +36,7 @@ public class Var {
 	
 	//Seminar
 	public static final String SEMINAR_URI = String.format(
-    		"%s://%s/api/seminars?code=%s&sign=%s", Var.SV_SCHEME, Var.SV_HOST, "%s", "%s");
-	public static final String DATE_FORMAT = "yyyy-mm-ddTHH:MM";
+    		"%s://%s/api/seminars/detail?code=%s&sign=%s", Var.SV_SCHEME, Var.SV_HOST, "%s", "%s");
+	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:MM:ss.SSS'Z'";
 	public static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.JAPAN);
 }
