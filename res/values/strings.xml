@@ -43,5 +43,7 @@
     <string name="at_msg_no_seminar">現在、この会場で開催中のイベントはありません</string>
     <string name="at_msg_comm_error">データ取得に失敗しました。もう一度タッチしてください。</string>
     <string name="at_msg_please_login">再ログインが必要です。</string>
+    <string name="at_msg_attend_complete">出席処理が完了しました</string>
+    <string name="at_msg_please_touch">もう一度NFCタグにタッチしてください。</string>
     
 </resources>

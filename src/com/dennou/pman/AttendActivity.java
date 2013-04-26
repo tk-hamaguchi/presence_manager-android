@@ -15,6 +15,8 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.dennnou.pman.R;
@@ -24,6 +26,7 @@ import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Var;
 import com.dennou.pman.data.Venue;
 import com.dennou.pman.logic.LoadSeminarTask;
+import com.dennou.pman.logic.PostAttendTask;
 import com.dennou.pman.nfc.PmTag;
 import com.esp.common.handler.AlertHandler;
 
@@ -39,7 +42,7 @@ public class AttendActivity extends BaseActivity{
 	private PendingIntent pendingIntent;
 	private IntentFilter[] filters;
 	private LoadSeminarTask task;
-	
+	private PmTag pmTag;
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
@@ -61,6 +64,9 @@ public class AttendActivity extends BaseActivity{
 			ndef.addDataScheme(Var.SV_SCHEME);
 			ndef.addDataAuthority(Var.SV_HOST, null);
 			filters = new IntentFilter[]{ndef};
+			
+			Button btAttend = (Button)findViewById(R.id.bt_attend);
+			btAttend.setOnClickListener(btAttendClick);
 		}
 	}
 	
@@ -104,7 +110,7 @@ public class AttendActivity extends BaseActivity{
             for (int i = 0; i < rawMsgs.length; i++) {
                 NdefMessage msg = (NdefMessage) rawMsgs[i];
                 Log.d(TAG, msg.toString());
-                PmTag pmTag = PmTag.get(msg);
+                pmTag = PmTag.get(msg);
                 if(pmTag!=null){
                 	handlePmTag(pmTag);
                 }
@@ -120,7 +126,7 @@ public class AttendActivity extends BaseActivity{
 					alert.obtainMessage(AlertHandler.ID_DISMISS).sendToTarget();
 					showSeminar(getSeminar(), getVenue(), getSeat());
 				}else{
-					if(statusCode==404){
+					if(getStatusCode()==404){
 						alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.at_msg_no_seminar, 0).sendToTarget();
 					}else{
 						alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.at_msg_comm_error, 0).sendToTarget();
@@ -185,5 +191,37 @@ public class AttendActivity extends BaseActivity{
 		}else{
 			return true;
 		}
+	}
+	
+	private OnClickListener btAttendClick = new OnClickListener(){
+		@Override
+		public void onClick(View v) {
+			if(pmTag !=null){
+				attend(pmTag);
+			}else{
+				alert.obtainMessage(AlertHandler.ID_SHOW_TOAST, R.string.at_msg_please_touch, 0).sendToTarget();
+			}
+		}
+	};
+	
+	private void attend(PmTag pmTag){
+		PostAttendTask task = new PostAttendTask(this, pmTag.getCode(), pmTag.getSign(), pmTag.getSecret()){
+			@Override
+			protected void onPostExecute(Boolean result) {
+				if(result){
+					alert.obtainMessage(AlertHandler.ID_DISMISS).sendToTarget();
+					alert.obtainMessage(AlertHandler.ID_SHOW_TOAST, R.string.at_msg_attend_complete, 0).sendToTarget();
+					finish();
+				}else{
+					if(getStatusCode()==404){
+						alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.at_msg_no_seminar, 0).sendToTarget();
+					}else{
+						alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.at_msg_comm_error, 0).sendToTarget();
+					}
+				}
+			}			
+		};
+		alert.obtainMessage(AlertHandler.ID_SHOW_MSG, R.string.msg_comm_get, 0).sendToTarget();
+		task.execute(new String[]{});
 	}
 }
