@@ -43,13 +43,13 @@ public class LoadSeminarTask extends AsyncTask<String, Void, Boolean> {
 			String bearer = String.format(Var.HEADER_BEARER, TempData.getInstance(context).getAuthToken());
 			get.setHeader(Var.HEADER_AUTHORIZATION, bearer);
 			
+			Log.d(TAG, "uri=" + uri);
 			HttpResponse response = client.execute( get );
 			statusCode = response.getStatusLine().getStatusCode();
+			Log.d(TAG, "status="+statusCode);
 			
-			if ( statusCode != HttpStatus.SC_OK ){
-				Log.d(TAG, "status="+statusCode);
+			if ( statusCode != HttpStatus.SC_OK )
 				return Boolean.FALSE;
-			}
 			
 	        String body = EntityUtils.toString(response.getEntity(), Var.CHARSET);
 	        JSONObject json = new JSONObject(body);

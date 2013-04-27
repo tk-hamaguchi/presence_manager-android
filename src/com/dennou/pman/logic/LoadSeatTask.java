@@ -41,8 +41,10 @@ public class LoadSeatTask extends AsyncTask<String, Void, Boolean> {
 			String bearer = String.format(Var.HEADER_BEARER, TempData.getInstance(context).getAuthToken());
 			get.setHeader(Var.HEADER_AUTHORIZATION, bearer);
 			
+			Log.d(TAG, "uri=" + uri);
 			HttpResponse response = client.execute( get );
 			statusCode = response.getStatusLine().getStatusCode();
+			Log.d(TAG, "status="+statusCode);
 			
 			if ( statusCode != HttpStatus.SC_OK )
 				return Boolean.FALSE;
@@ -55,11 +57,12 @@ public class LoadSeatTask extends AsyncTask<String, Void, Boolean> {
 			int venueId= venueObj.getInt("id");
 			//Seat
 			JSONArray nfcTagArray = json.getJSONArray("nfc_tag");
+			Log.d(TAG, "nfc_tag count=" + nfcTagArray.length());
 			for(int i=0;i<nfcTagArray.length(); i++){
 				JSONObject obj = nfcTagArray.getJSONObject(i);
-				int id = obj.getInt("id");
+				int id = obj.getInt("code");
 				String name = obj.getString("name");
-				String sequence = obj.getString("sequence");
+				String sequence = obj.getString("secret");
 				String sign = obj.getString("sign");
 				Seat seat = new Seat(id, name, sequence, sign);
 				seat.setVenueId(venueId);

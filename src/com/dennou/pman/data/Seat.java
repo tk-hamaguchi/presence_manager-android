@@ -63,6 +63,10 @@ public class Seat {
 		db.delete(TABLE, "venue_id=?", new String[]{String.valueOf(venueId)});
 	}
 	
+	public static void delete(SQLiteDatabase db){
+		db.delete(TABLE, null, null);
+	}
+	
 	public void insert(SQLiteDatabase db){
 		ContentValues values = new ContentValues();
 		values.put(ID, id);

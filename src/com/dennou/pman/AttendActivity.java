@@ -4,9 +4,8 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 import android.app.AlertDialog;
-import android.app.PendingIntent;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
@@ -19,11 +18,9 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.dennnou.pman.R;
 import com.dennou.pman.data.Seat;
 import com.dennou.pman.data.Seminar;
 import com.dennou.pman.data.TempData;
-import com.dennou.pman.data.Var;
 import com.dennou.pman.data.Venue;
 import com.dennou.pman.logic.LoadSeminarTask;
 import com.dennou.pman.logic.PostAttendTask;
@@ -38,9 +35,6 @@ public class AttendActivity extends BaseActivity{
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.JAPAN);
 	
 	//NFC関係
-	private NfcAdapter nfcAdapter;
-	private PendingIntent pendingIntent;
-	private IntentFilter[] filters;
 	private LoadSeminarTask task;
 	private PmTag pmTag;
 	@Override
@@ -50,38 +44,22 @@ public class AttendActivity extends BaseActivity{
 		
 		//ALertDialog
 		alert = new AlertHandler(this);
+		Button btAttend = (Button)findViewById(R.id.bt_attend);
+		btAttend.setOnClickListener(btAttendClick);
+	}
+	
+	@Override
+	protected void onStart() {
+		super.onStart();
+		if(!checkLogin())
+			return;
 		
-		//NFC
-		nfcAdapter = NfcAdapter.getDefaultAdapter(this);
-		if(nfcAdapter != null){
-			Intent pi = new Intent(this, getClass());
-			pi.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-			pi.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-			pi.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-			
-			pendingIntent = PendingIntent.getActivity(this, 0, pi, 0);
-			IntentFilter ndef = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
-			ndef.addDataScheme(Var.SV_SCHEME);
-			ndef.addDataAuthority(Var.SV_HOST, null);
-			filters = new IntentFilter[]{ndef};
-			
-			Button btAttend = (Button)findViewById(R.id.bt_attend);
-			btAttend.setOnClickListener(btAttendClick);
+		Intent intent = getIntent();
+		Log.d(TAG, "onStart:" + intent.getAction());
+		if(NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())){
+			if(task==null || task.getStatus()==Status.FINISHED)
+				handleNdef(intent);
 		}
-	}
-	
-	@Override
-	protected void onResume() {
-		super.onResume();
-		if(nfcAdapter != null)
-			nfcAdapter.enableForegroundDispatch(this, pendingIntent, filters, null);
-	}
-	
-	@Override
-	protected void onPause() {
-		super.onPause();
-		if(nfcAdapter != null)
-			nfcAdapter.disableForegroundDispatch(this);
 	}
 	
 	@Override
@@ -89,19 +67,6 @@ public class AttendActivity extends BaseActivity{
 		super.onStop();
 		if(dialog != null && dialog.isShowing())
 			dialog.dismiss();
-	}
-	
-	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		if(!checkLogin())
-			return;
-		
-		Log.d(TAG, "onNewIntent:" + intent.getAction());
-		if(NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())){
-			if(task==null || task.getStatus()==Status.FINISHED)
-				handleNdef(intent);
-		}
 	}
 	
 	private void handleNdef(Intent intent){
@@ -126,11 +91,7 @@ public class AttendActivity extends BaseActivity{
 					alert.obtainMessage(AlertHandler.ID_DISMISS).sendToTarget();
 					showSeminar(getSeminar(), getVenue(), getSeat());
 				}else{
-					if(getStatusCode()==404){
-						alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.at_msg_no_seminar, 0).sendToTarget();
-					}else{
-						alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.at_msg_comm_error, 0).sendToTarget();
-					}
+					showError(getStatusCode());
 				}
 			}
 		};
@@ -160,25 +121,29 @@ public class AttendActivity extends BaseActivity{
 		});
 	}
 	
+	private void showError(int statusCode){
+		AlertDialog.Builder ab = new AlertDialog.Builder(this);
+		ab.setTitle(R.string.app_name);
+		if(statusCode==404){
+			ab.setMessage(R.string.at_msg_no_seminar);
+		}else{
+			ab.setMessage(R.string.at_msg_comm_error);
+		}
+		ab.setCancelable(false);
+		ab.setPositiveButton(R.string.c_ok, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				finish();
+			}
+		});
+		dialog = ab.show();
+	}
+	
 	private void invokeBrowser(String uri){
 		Intent it = new Intent(Intent.ACTION_VIEW);
 		it.addCategory(Intent.CATEGORY_DEFAULT);
 		it.setData(Uri.parse(uri));
 		startActivity(it);
-	}
-	
-	@Override
-	protected void onStart() {
-		super.onStart();
-		if(!checkLogin())
-			return;
-		
-		Intent intent = getIntent();
-		Log.d(TAG, "onStart:" + intent.getAction());
-		if(NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())){
-			if(task==null || task.getStatus()==Status.FINISHED)
-				handleNdef(intent);
-		}
 	}
 	
 	private boolean checkLogin(){
@@ -196,7 +161,7 @@ public class AttendActivity extends BaseActivity{
 	private OnClickListener btAttendClick = new OnClickListener(){
 		@Override
 		public void onClick(View v) {
-			if(pmTag !=null){
+			if(pmTag != null){
 				attend(pmTag);
 			}else{
 				alert.obtainMessage(AlertHandler.ID_SHOW_TOAST, R.string.at_msg_please_touch, 0).sendToTarget();
@@ -221,7 +186,7 @@ public class AttendActivity extends BaseActivity{
 				}
 			}			
 		};
-		alert.obtainMessage(AlertHandler.ID_SHOW_MSG, R.string.msg_comm_get, 0).sendToTarget();
+		alert.obtainMessage(AlertHandler.ID_SHOW_MSG, R.string.at_msg_exec_attend, 0).sendToTarget();
 		task.execute(new String[]{});
 	}
 }

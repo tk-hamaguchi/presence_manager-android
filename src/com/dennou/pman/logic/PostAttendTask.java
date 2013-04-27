@@ -44,14 +44,16 @@ public class PostAttendTask extends AsyncTask<String, Void, Boolean> {
 			entity.setContentType("application/json");
 			entity.setChunked(false);
 			
+			Log.d(TAG, "url=" + uri);
 			HttpPost post = new HttpPost(uri);
 			String bearer = String.format(Var.HEADER_BEARER, TempData.getInstance(context).getAuthToken());
 			post.setHeader(Var.HEADER_AUTHORIZATION, bearer);
 			post.setEntity(entity);
-			Log.d(TAG, json.toString());
+			Log.d(TAG, String.format("code=%s sign=%s secret=%s", code, sign, secret));
 			
 			HttpResponse response = client.execute( post );
 			statusCode = response.getStatusLine().getStatusCode();
+			Log.d(TAG, "status="+statusCode);
 			
 			if ( statusCode != HttpStatus.SC_OK )
 				return Boolean.FALSE;

@@ -1,6 +1,9 @@
 package com.dennou.pman;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,9 +15,11 @@ import android.webkit.WebViewClient;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
-import com.dennnou.pman.R;
+import com.dennou.pman.data.Seat;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Var;
+import com.dennou.pman.data.Venue;
+import com.dennou.pman.data.VenueDB;
 import com.esp.common.handler.AlertHandler;
 
 public class LoginActivity extends BaseActivity{
@@ -25,6 +30,7 @@ public class LoginActivity extends BaseActivity{
 	
 	private WebView webView;
 	private AlertHandler alert;
+	private Dialog dialog;
 	private TempData tempData;
 	
 	@SuppressLint("SetJavaScriptEnabled")
@@ -48,7 +54,14 @@ public class LoginActivity extends BaseActivity{
 		super.onStart();
 		setView();
 	}
-		
+	
+	@Override
+	protected void onStop(){
+		super.onStop();
+		if(dialog != null && dialog.isShowing())
+			dialog.dismiss();
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.login, menu);
@@ -63,10 +76,12 @@ public class LoginActivity extends BaseActivity{
 				startActivity(itTagFormat);
 				return true;
 			case R.id.menu_logout:
-				logout();
+				showLogout();
+				break;
 			case R.id.menu_config:
 				Intent itAttend = new Intent(this, AttendActivity.class);
 				startActivity(itAttend);
+				break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -85,7 +100,29 @@ public class LoginActivity extends BaseActivity{
 		}
 	}
 	
+	private void showLogout(){
+		AlertDialog.Builder ab = new AlertDialog.Builder(this);
+		ab.setTitle(R.string.app_name);
+		ab.setMessage(R.string.lo_msg_ask_logout);
+		ab.setPositiveButton(R.string.c_ok, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				logout();
+			}
+		});
+		ab.setNegativeButton(R.string.c_cancel, null);
+		dialog = ab.show();
+	}
+	
 	private void logout(){
+		VenueDB db = new VenueDB(this, VenueDB.ADMIN_DB);
+		try{
+			db.setWritableDb();
+			Venue.delete(db.getDb());
+			Seat.delete(db.getDb());
+		}finally{
+			db.closeWithoutCommit();
+		}
 		tempData.setAccount(null);
 		tempData.setAuthToken(null);
 		tempData.save(this);

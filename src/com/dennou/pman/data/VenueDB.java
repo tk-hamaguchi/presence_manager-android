@@ -52,7 +52,7 @@ public class VenueDB extends SQLiteOpenHelper {
 								"sign TEXT,"+
 								"secret TEXT"
 								));
-				
+				/* ダミーデータ生成
 				for(int i=0;i<10; i++){
 					Venue venue = new Venue();
 					venue.setId(i);
@@ -78,6 +78,7 @@ public class VenueDB extends SQLiteOpenHelper {
 				test.setSecret("1d102a8c");
 				test.setSign("12345678901234567891234567890123456789");
 				test.insert(db);
+				*/
 			}
 			db.setTransactionSuccessful();
 		}finally{

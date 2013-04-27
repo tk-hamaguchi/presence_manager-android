@@ -26,7 +26,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 
-import com.dennnou.pman.R;
+import com.dennou.pman.R;
 import com.dennou.pman.data.Seat;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Venue;
@@ -135,12 +135,10 @@ public class TagFormatActivity extends BaseActivity{
 	protected void onStart() {
 		super.onStart();
 		
-		if(TempData.getInstance(this).getAuthToken()==null){
-			finish();
-			return;
-		}
-		
 		setInitData();
+		if(TempData.getInstance(this).getAuthToken()==null){
+			showPleaseLogin();
+		}
 	}
 
 	@Override
@@ -163,9 +161,9 @@ public class TagFormatActivity extends BaseActivity{
 
 		@Override
 		public void onItemSelected(AdapterView<?> av, View v, int arg2, long id) {
-			Venue room = (Venue)av.getSelectedItem();
-			if(room != null)
-				setSeat(room.getId());
+			Venue venue = (Venue)av.getSelectedItem();
+			if(venue != null)
+				setSeat(venue);
 		}
 
 		@Override
@@ -174,16 +172,22 @@ public class TagFormatActivity extends BaseActivity{
 		
 	};
 	
-	private void setSeat(int roomId){
+	private void setSeat(Venue venue){
 		aaSeat.clear();
 		VenueDB db = new VenueDB(this, VenueDB.ADMIN_DB);
+		List<Seat> list = null;
 		try{
 			db.setReadableDb();
-			for(Seat seat:Seat.list(db.getDb(), roomId)){
-				aaSeat.add(seat);
-			}
+			list = Seat.list(db.getDb(), venue.getId());
 		}finally{
 			db.closeWithoutCommit();
+		}
+		if(list.size() > 0){
+			for(Seat seat:list){
+				aaSeat.add(seat);
+			}
+		}else{
+			loadSeat(venue);
 		}
 	}
 	
@@ -248,6 +252,7 @@ public class TagFormatActivity extends BaseActivity{
 		public void onItemClick(AdapterView<?> av, View v, int position, long id) {
 			targetSeat = aaSeat.getItem(position);
 			AlertDialog.Builder ab = new AlertDialog.Builder(TagFormatActivity.this);
+			ab.setTitle(R.string.app_name);
 			ab.setMessage(R.string.tf_msg_write);
 			ab.setIcon(android.R.drawable.ic_popup_disk_full);
 			ab.setNegativeButton(R.string.c_cancel, new DialogInterface.OnClickListener() {

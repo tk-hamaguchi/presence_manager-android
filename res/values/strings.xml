@@ -33,7 +33,8 @@
     <string name="lo_msg_invalid_tag">出席用タグではありません。</string>
     <string name="lo_msg_login_failed">ログインに失敗しました</string>
     <string name="lo_msg_login_complete">ログインが完了しました</string>
-
+    <string name="lo_msg_ask_logout">ログアウトしてもよろしいですか？</string>
+    
     <string name="at_c_venue">会場</string>
     <string name="at_c_seat">座席番号</string>
     <string name="at_c_event">イベント</string>
@@ -44,6 +45,7 @@
     <string name="at_msg_comm_error">データ取得に失敗しました。もう一度タッチしてください。</string>
     <string name="at_msg_please_login">再ログインが必要です。</string>
     <string name="at_msg_attend_complete">出席処理が完了しました</string>
+    <string name="at_msg_exec_attend">出席処理中……</string>
     <string name="at_msg_please_touch">もう一度NFCタグにタッチしてください。</string>
     
 </resources>
