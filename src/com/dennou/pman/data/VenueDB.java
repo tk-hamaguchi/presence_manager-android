@@ -6,9 +6,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 public class VenueDB extends SQLiteOpenHelper {
-	private static final int DB_VERSION = 7;
-	public static final String ADMIN_DB = "room.db";
-	public static final String USER_DB = "room.db";
+	private static final int DB_VERSION = 9;
+	public static final String ADMIN_DB = "admin.db";
+	public static final String USER_DB = "user.db";
 	private SQLiteDatabase db;
 	private static Integer lock = 0;
 	
@@ -38,6 +38,11 @@ public class VenueDB extends SQLiteOpenHelper {
 				}catch(Exception ex){
 					
 				}
+				try{
+					db.execSQL("drop table seminars");
+				}catch(Exception ex){
+					
+				}
 				db.execSQL(String.format("create table venues (%s)",
 						android.provider.BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"+
 								"id INTEGER,"+
@@ -52,6 +57,19 @@ public class VenueDB extends SQLiteOpenHelper {
 								"sign TEXT,"+
 								"secret TEXT"
 								));
+				
+				db.execSQL(String.format("create table seminars (%s)",
+						android.provider.BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"+
+								"id INTEGER,"+
+								"name TEXT,"+
+								"started_at INTEGER,"+
+								"ended_at INTEGER,"+
+								"description TEXT,"+
+								"url TEXT,"+
+								"venue_name TEXT,"+
+								"seat_name TEXT"
+								));
+				
 				/* ダミーデータ生成
 				for(int i=0;i<10; i++){
 					Venue venue = new Venue();

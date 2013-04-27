@@ -1,5 +1,7 @@
 package com.dennou.pman;
 
+import java.util.List;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -12,10 +14,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 import com.dennou.pman.data.Seat;
+import com.dennou.pman.data.Seminar;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Var;
 import com.dennou.pman.data.Venue;
@@ -95,6 +100,7 @@ public class LoginActivity extends BaseActivity{
 		}else{
 			TextView tvAccount = (TextView)findViewById(R.id.tv_account);
 			tvAccount.setText(tempData.getAccount());
+			showLog();
 			
 			vf.setDisplayedChild(INDEX_HOME);
 		}
@@ -128,6 +134,24 @@ public class LoginActivity extends BaseActivity{
 		tempData.save(this);
 		setView();
 	}
+	
+	private void showLog(){
+		List<Seminar> list;
+		VenueDB db = new VenueDB(this, VenueDB.USER_DB);
+		try{
+			db.setReadableDb();
+			list = Seminar.list(db.getDb());
+		}finally{
+			db.closeWithoutCommit();
+		}
+		ArrayAdapter<Seminar> aa = new ArrayAdapter<Seminar>(this, android.R.layout.simple_list_item_1);
+		for(Seminar seminar:list){
+			aa.add(seminar);
+		}
+		ListView lvLog = (ListView)findViewById(R.id.lb_log);
+		lvLog.setAdapter(aa);
+	}
+	
 	
 	private WebViewClient webViewClient = new WebViewClient() {
 		

@@ -8,6 +8,7 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -38,7 +39,7 @@ public class LoadSeminarTask extends AsyncTask<String, Void, Boolean> {
 	protected Boolean doInBackground(String... params) {
 		try {
 			DefaultHttpClient client = new DefaultHttpClient();
-			String uri = String.format(Var.SEMINAR_URI, code, sign);
+			String uri = String.format(Var.SEMINAR_URI, code, Uri.encode(sign));
 			HttpGet get = new HttpGet(uri);
 			String bearer = String.format(Var.HEADER_BEARER, TempData.getInstance(context).getAuthToken());
 			get.setHeader(Var.HEADER_AUTHORIZATION, bearer);

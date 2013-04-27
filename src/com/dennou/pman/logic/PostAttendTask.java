@@ -5,14 +5,18 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.dennou.pman.data.Seat;
+import com.dennou.pman.data.Seminar;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Var;
+import com.dennou.pman.data.Venue;
 import com.dennou.pman.data.VenueDB;
 
 public class PostAttendTask extends AsyncTask<String, Void, Boolean> {
@@ -58,9 +62,36 @@ public class PostAttendTask extends AsyncTask<String, Void, Boolean> {
 			if ( statusCode != HttpStatus.SC_OK )
 				return Boolean.FALSE;
 			
-			VenueDB db = new VenueDB(context, VenueDB.ADMIN_DB); 
+			
+	        //Venue
+	        String body = EntityUtils.toString(response.getEntity(), Var.CHARSET);
+	        json = new JSONObject(body);
+	        
+	        JSONObject venueObj = json.getJSONObject("venue");
+			Venue venue = new Venue();
+			venue.setName(venueObj.getString("name"));
+			//Seat
+			JSONObject seatObj = json.getJSONObject("seat");
+			Seat seat = new Seat();
+			seat.setName(seatObj.getString("name"));
+			
+			//Seminar
+			JSONObject seminarObj = json.getJSONObject("seminar");
+			Seminar seminar = new Seminar();
+			seminar.setId(seminarObj.getInt("id"));
+			seminar.setName(seminarObj.getString("name"));
+			seminar.setDescription(seminarObj.getString("description"));
+			seminar.setStartedAt(Var.sdf.parse(seminarObj.getString("started_at")));
+			seminar.setEndedAt(Var.sdf.parse(seminarObj.getString("ended_at")));
+			seminar.setUrl(seminarObj.getString("url"));
+			seminar.setVenueName(venue.getName());
+			seminar.setSeatName(seat.getName());
+			
+			VenueDB db = new VenueDB(context, VenueDB.USER_DB); 
 			try{
 				db.setWritableDb();
+				if(Seminar.find(db.getDb(), seminar.getId()) == null)
+					seminar.insert(db.getDb());
 			}finally{
 				db.closeWithoutCommit();
 			}

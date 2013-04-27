@@ -20,7 +20,7 @@ import com.dennou.pman.data.Seat;
 import com.dennou.pman.data.Var;
 
 public class PmTag {
-	private String TAG = "PmTag";
+	private static final String TAG = "PmTag";
 	public static final String MIME = "application/com.dennou.pm";
 	
 	private static final byte[] madKeyA = new byte[]{(byte)0xA0, (byte)0xA1, (byte)0xA2, (byte)0xA3, (byte)0xA4, (byte)0xA5};
@@ -62,6 +62,7 @@ public class PmTag {
 				if(record.getTnf() == NdefRecord.TNF_WELL_KNOWN &&
 					record.getType()!=null && record.getType()[0]=='U'){
 					Uri uri = Uri.parse(new String(record.getPayload(), Encoding.US_ASCII.toString()));
+					Log.d(TAG, "nfctag uri="+uri);
 					if(Var.SV_HOST.startsWith(uri.getHost())){
 						String code = uri.getQueryParameter(Var.ATTEND_PARAM_NFC_TAG);
 						pmTag.code = Integer.valueOf(code);
@@ -173,7 +174,7 @@ public class PmTag {
     @SuppressLint("DefaultLocale")
 	public boolean writeSeatTag(Seat seat){
 		try {
-			String uri = String.format(Locale.US, Var.ATTEND_URI, seat.getId(), seat.getSign());
+			String uri = String.format(Locale.US, Var.ATTEND_URI, seat.getId(), Uri.encode(seat.getSign()));
 			byte[] uriData = uri.getBytes(Charset.forName(Encoding.US_ASCII.name()));
 			ByteBuffer bb = ByteBuffer.allocate(uriData.length + 1);
 			bb.put((byte)0);
