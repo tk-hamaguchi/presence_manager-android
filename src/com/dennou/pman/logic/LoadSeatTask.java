@@ -36,7 +36,8 @@ public class LoadSeatTask extends AsyncTask<String, Void, Boolean> {
 		try {
 			DefaultHttpClient client = new DefaultHttpClient();
 			seatList = new ArrayList<Seat>();
-			String uri = String.format(Var.SEAT_URI, venueId);
+			String uriFormat = Var.getUri(Var.SEAT_URI, context);
+			String uri = String.format(uriFormat, venueId);
 			HttpGet get = new HttpGet(uri);
 			String bearer = String.format(Var.HEADER_BEARER, TempData.getInstance(context).getAuthToken());
 			get.setHeader(Var.HEADER_AUTHORIZATION, bearer);

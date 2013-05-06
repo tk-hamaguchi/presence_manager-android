@@ -135,9 +135,10 @@ public class TagFormatActivity extends BaseActivity{
 	protected void onStart() {
 		super.onStart();
 		
-		setInitData();
 		if(TempData.getInstance(this).getAuthToken()==null){
 			showPleaseLogin();
+		}else{
+			setInitData();
 		}
 	}
 
@@ -275,7 +276,7 @@ public class TagFormatActivity extends BaseActivity{
 			protected Boolean doInBackground(Tag... params) {
 				AlertHandler.wait(100);
 				PmTag pmTag = new PmTag(params[0]);
-				return (Boolean)pmTag.writeSeatTag(targetSeat);
+				return (Boolean)pmTag.writeSeatTag(targetSeat, TagFormatActivity.this);
 			}
 			
 			@Override

@@ -7,16 +7,19 @@ import android.preference.PreferenceManager;
 public class TempData {
 	private static final String TAG_AUTH_TOKEN = "temp.auth_token";
 	private static final String TAG_ACCOUNT = "temp.account";
+	public static final String TAG_HOST = "temp.host";
 	
 	private static TempData instance;
 	
 	private String authToken;
 	private String account;
+	private String host;
 	
 	private TempData(Context context) {
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
 		authToken = pref.getString(TAG_AUTH_TOKEN, null);
 		account = pref.getString(TAG_ACCOUNT, null);
+		host = pref.getString(TAG_HOST, Var.SV_HOST);
 	}
 	
 	public static TempData getInstance(Context context){
@@ -48,5 +51,13 @@ public class TempData {
 
 	public void setAccount(String account) {
 		this.account = account;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
 	}
 }

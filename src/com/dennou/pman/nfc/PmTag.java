@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.util.Locale;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -172,9 +173,10 @@ public class PmTag {
     }
     
     @SuppressLint("DefaultLocale")
-	public boolean writeSeatTag(Seat seat){
+	public boolean writeSeatTag(Seat seat, Context context){
 		try {
-			String uri = String.format(Locale.US, Var.ATTEND_URI, seat.getId(), Uri.encode(seat.getSign()));
+			String uriFormat = Var.getUri(Var.ATTEND_URI, context);
+			String uri = String.format(Locale.US, uriFormat, seat.getId(), Uri.encode(seat.getSign()));
 			byte[] uriData = uri.getBytes(Charset.forName(Encoding.US_ASCII.name()));
 			ByteBuffer bb = ByteBuffer.allocate(uriData.length + 1);
 			bb.put((byte)0);

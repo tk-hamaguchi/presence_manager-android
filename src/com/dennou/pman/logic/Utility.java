@@ -1,5 +1,6 @@
 package com.dennou.pman.logic;
 
+
 public class Utility {
 	public static boolean sequenceEqual(byte[] a, byte[]b){
 		if(a!=null&&b==null || a==null&&a!=null)

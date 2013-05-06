@@ -27,17 +27,22 @@
         </activity>
         <activity android:name="com.dennou.pman.TagFormatActivity" >
         </activity>
-        <activity android:name="com.dennou.pman.AttendActivity">
+        <activity android:name="com.dennou.pman.AttendActivity" >
             <intent-filter>
                 <data
-                    android:host="pmanager.ddo.jp"
-                    android:port="3000"
+                    android:host="pm2013-03.herokuapp.com"
                     android:scheme="http" />
 
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </activity>
+        <activity android:name="com.dennou.pman.PrefActivity" >
+        </activity>
+        <activity
+            android:name="com.dennou.pman.LogActivity"
+            android:label="@string/title_activity_log" >
         </activity>
     </application>
 

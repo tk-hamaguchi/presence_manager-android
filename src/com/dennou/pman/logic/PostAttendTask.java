@@ -37,7 +37,7 @@ public class PostAttendTask extends AsyncTask<String, Void, Boolean> {
 	protected Boolean doInBackground(String... params) {
 		try {
 			DefaultHttpClient client = new DefaultHttpClient();
-			String uri = Var.ATTEND_API_URI;
+			String uri = Var.getUri(Var.ATTEND_API_URI, context);
 			
 			JSONObject json = new JSONObject();
 			json.put("code", code);

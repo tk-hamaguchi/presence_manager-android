@@ -1,5 +1,7 @@
 package com.dennou.pman;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import android.annotation.SuppressLint;
@@ -12,10 +14,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
@@ -25,6 +29,8 @@ import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Var;
 import com.dennou.pman.data.Venue;
 import com.dennou.pman.data.VenueDB;
+import com.dennou.pman.logic.AndroidUtility;
+import com.dennou.pman.logic.SeminarAdapter;
 import com.esp.common.handler.AlertHandler;
 
 public class LoginActivity extends BaseActivity{
@@ -52,6 +58,14 @@ public class LoginActivity extends BaseActivity{
 		webView.getSettings().setJavaScriptEnabled(true);
 		String ua = webView.getSettings().getUserAgentString();
 		webView.getSettings().setUserAgentString( ua + "/" + Var.UA);
+		
+		Button btLog = (Button)findViewById(R.id.bt_log);
+		btLog.setOnClickListener(btLogClick);
+		Button btSeminar = (Button)findViewById(R.id.bt_seminar);
+		btSeminar.setOnClickListener(btSeminarClick);
+		
+		tempData.setHost("pm2013-03.herokuapp.com");
+		tempData.save(this);
 	}
 
 	@Override
@@ -84,8 +98,8 @@ public class LoginActivity extends BaseActivity{
 				showLogout();
 				break;
 			case R.id.menu_config:
-				Intent itAttend = new Intent(this, AttendActivity.class);
-				startActivity(itAttend);
+				Intent itPref = new Intent(this, PrefActivity.class);
+				startActivity(itPref);
 				break;
 		}
 		return super.onOptionsItemSelected(item);
@@ -95,7 +109,8 @@ public class LoginActivity extends BaseActivity{
 	private void setView(){
 		ViewFlipper vf = (ViewFlipper)findViewById(R.id.vf_home);
 		if(tempData.getAuthToken() == null){
-			webView.loadUrl(Var.AUTH_URI);
+			String uriFormat = Var.getUri(Var.AUTH_URI, this);
+			webView.loadUrl(uriFormat);
 			vf.setDisplayedChild(INDEX_LOGIN);
 		}else{
 			TextView tvAccount = (TextView)findViewById(R.id.tv_account);
@@ -139,19 +154,78 @@ public class LoginActivity extends BaseActivity{
 		List<Seminar> list;
 		VenueDB db = new VenueDB(this, VenueDB.USER_DB);
 		try{
+			Calendar cal = Calendar.getInstance();
 			db.setReadableDb();
 			list = Seminar.list(db.getDb());
+			Seminar s = new Seminar();
+			s.setName("Android講習会");
+			s.setStartedAt(new Date(0));
+			cal.add(Calendar.DAY_OF_MONTH, 1);
+			s.setEndedAt(cal.getTime());
+			s.setVenueName("大講義室--3");
+			s.setSeatName("A-29");
+			s.setId(10000);
+			s.setUrl("http://m.yahoo.co.jp/");
+			list.add(s);
+			
+			s = new Seminar();
+			s.setName("Android講習会-2");
+			s.setStartedAt(new Date(0));
+			s.setEndedAt(cal.getTime());
+			s.setVenueName("大講義室--3");
+			s.setSeatName("A-30");
+			s.setId(10000);
+			s.setUrl("http://m.yahoo.co.jp/");
+			list.add(s);
+			
+			cal.set(Calendar.HOUR, 0);
+			cal.set(Calendar.MINUTE, 0);
+			Date now = Calendar.getInstance().getTime();
+			
+			ViewGroup v = (ViewGroup)findViewById(R.id.inc_seminar);
+			if(list.size() != 0 && now.getTime() < list.get(0).getEndedAt().getTime()){
+				Seminar seminar = list.get(0);
+				SeminarAdapter.showSeminar(v, seminar);
+				TextView tvSeminar = (TextView)v.findViewById(R.id.tv_seminar);
+				tvSeminar.setTag(seminar);
+				tvSeminar.setOnClickListener(seminarClick);
+				
+				v.setVisibility(View.VISIBLE);
+			}else{
+				v.setVisibility(View.GONE);
+			}
 		}finally{
 			db.closeWithoutCommit();
 		}
-		ArrayAdapter<Seminar> aa = new ArrayAdapter<Seminar>(this, android.R.layout.simple_list_item_1);
-		for(Seminar seminar:list){
-			aa.add(seminar);
-		}
-		ListView lvLog = (ListView)findViewById(R.id.lb_log);
-		lvLog.setAdapter(aa);
 	}
 	
+	private OnClickListener seminarClick = new View.OnClickListener() {		
+		@Override
+		public void onClick(View v) {
+			Seminar seminar = (Seminar)v.getTag();
+			if(seminar.getUrl() == null || !seminar.getUrl().startsWith("http"))
+				return;
+			AndroidUtility.openUri(LoginActivity.this, seminar.getUrl());
+		}
+	};
+	
+	private OnClickListener btLogClick =new OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			Intent it = new Intent(LoginActivity.this, LogActivity.class);
+			startActivity(it);
+		}
+	};
+	
+	private OnClickListener btSeminarClick =new OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			String uri = Var.getUri(Var.CREATE_SEMINAR_URI, LoginActivity.this);
+			AndroidUtility.openUri(LoginActivity.this, uri);
+		}
+	};
 	
 	private WebViewClient webViewClient = new WebViewClient() {
 		
@@ -169,7 +243,8 @@ public class LoginActivity extends BaseActivity{
 					setView();
 				}else{
 					alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.lo_msg_login_failed, 0).sendToTarget();
-					webView.loadUrl(Var.AUTH_URI);
+					String uriFormat = Var.getUri(Var.AUTH_URI, LoginActivity.this);
+					webView.loadUrl(uriFormat);
 				}
 				return true;
 			}else{

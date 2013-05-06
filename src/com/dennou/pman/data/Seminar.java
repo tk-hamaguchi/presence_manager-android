@@ -61,7 +61,7 @@ public class Seminar {
 		Cursor c = db.query(TABLE, new String[]{ID, NAME, STARTED_AT,ENDED_AT,DESCRIPTION,URL,VENUE_NAME,SEAT_NAME},
 				null,
 				null,
-				null, null, null);
+				null, null, STARTED_AT + " DESC");
 		while(c.moveToNext()){
 			list.add(new Seminar(c));
 		}
