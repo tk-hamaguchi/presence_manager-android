@@ -35,11 +35,12 @@ public class LoadVenueTask extends AsyncTask<String, Void, Boolean> {
 			DefaultHttpClient client = new DefaultHttpClient();
 			venueList = new ArrayList<Venue>();
 			
-			HttpGet get = new HttpGet(Var.VENUE_URI);
+			String uriFormat = Var.getUri(Var.VENUE_URI, context);
+			HttpGet get = new HttpGet(uriFormat);
 			String bearer = String.format(Var.HEADER_BEARER, TempData.getInstance(context).getAuthToken());
 			get.setHeader(Var.HEADER_AUTHORIZATION, bearer);
 			
-			Log.d(TAG, "uri="+Var.VENUE_URI);
+			Log.d(TAG, "uri="+uriFormat);
 			HttpResponse response = client.execute( get );
 			statusCode = response.getStatusLine().getStatusCode();
 			Log.d(TAG, "status="+statusCode);

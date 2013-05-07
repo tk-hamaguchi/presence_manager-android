@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference android:dialogTitle="@string/cf_c_host" android:key="temp.host" android:defaultValue="pm2013-03.herokuapp.com" android:title="@string/cf_c_host"/>
+    
+
+</PreferenceScreen>
