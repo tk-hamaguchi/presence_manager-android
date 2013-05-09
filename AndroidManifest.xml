@@ -44,6 +44,13 @@
             android:name="com.dennou.pman.LogActivity"
             android:label="@string/title_activity_log" >
         </activity>
-    </application>
+        <activity
+            android:name="com.dennou.pman.MySeminarActivity"
+            android:label="@string/ms_title" >
+        </activity>
+        <activity
+            android:name="com.dennou.pman.NfcActivity" android:noHistory="true">
+        </activity>
+        </application>
 
 </manifest>

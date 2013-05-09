@@ -22,7 +22,7 @@ import com.dennou.pman.data.Seat;
 import com.dennou.pman.data.Seminar;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Venue;
-import com.dennou.pman.logic.LoadSeminarTask;
+import com.dennou.pman.logic.LoadSeminarDetailTask;
 import com.dennou.pman.logic.PostAttendTask;
 import com.dennou.pman.nfc.PmTag;
 import com.esp.common.handler.AlertHandler;
@@ -30,12 +30,11 @@ import com.esp.common.handler.AlertHandler;
 public class AttendActivity extends BaseActivity{
 	private static final String TAG = "AttendActivity";
 
-	private AlertHandler alert;
 	private AlertDialog dialog;
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.JAPAN);
 	
 	//NFC関係
-	private LoadSeminarTask task;
+	private LoadSeminarDetailTask task;
 	private PmTag pmTag;
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
@@ -43,7 +42,6 @@ public class AttendActivity extends BaseActivity{
 		setContentView(R.layout.activity_attend);
 		
 		//ALertDialog
-		alert = new AlertHandler(this);
 		Button btAttend = (Button)findViewById(R.id.bt_attend);
 		btAttend.setOnClickListener(btAttendClick);
 	}
@@ -84,7 +82,7 @@ public class AttendActivity extends BaseActivity{
 	}
 	
 	private void handlePmTag(PmTag pmTag){
-		LoadSeminarTask task = new LoadSeminarTask(this, pmTag.getCode(), pmTag.getSign()){
+		LoadSeminarDetailTask task = new LoadSeminarDetailTask(this, pmTag.getCode(), pmTag.getSign()){
 			@Override
 			protected void onPostExecute(Boolean result) {
 				if(result){

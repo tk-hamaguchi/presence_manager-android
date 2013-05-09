@@ -18,7 +18,7 @@ import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Var;
 import com.dennou.pman.data.Venue;
 
-public class LoadSeminarTask extends AsyncTask<String, Void, Boolean> {
+public class LoadSeminarDetailTask extends AsyncTask<String, Void, Boolean> {
 	private final static String TAG = "LoadSeminarTask";
 	private Context context;
 	
@@ -30,7 +30,7 @@ public class LoadSeminarTask extends AsyncTask<String, Void, Boolean> {
 	private Venue venue;
 	protected int statusCode;
 	
-	public LoadSeminarTask(Context context, int code, String sign) {
+	public LoadSeminarDetailTask(Context context, int code, String sign) {
 		this.context = context;
 		this.code = code;
 		this.sign = sign;
@@ -39,7 +39,8 @@ public class LoadSeminarTask extends AsyncTask<String, Void, Boolean> {
 	protected Boolean doInBackground(String... params) {
 		try {
 			DefaultHttpClient client = new DefaultHttpClient();
-			String uri = String.format(Var.SEMINAR_URI, code, Uri.encode(sign));
+			String format = Var.getUri(Var.SEMINAR_URI, context);
+			String uri = String.format(format, code, Uri.encode(sign));
 			HttpGet get = new HttpGet(uri);
 			String bearer = String.format(Var.HEADER_BEARER, TempData.getInstance(context).getAuthToken());
 			get.setHeader(Var.HEADER_AUTHORIZATION, bearer);
@@ -69,8 +70,8 @@ public class LoadSeminarTask extends AsyncTask<String, Void, Boolean> {
 			seminar = new Seminar();
 			seminar.setName(seminarObj.getString("name"));
 			seminar.setDescription(seminarObj.getString("description"));
-			seminar.setStartedAt(Var.sdf.parse(seminarObj.getString("started_at")));
-			seminar.setEndedAt(Var.sdf.parse(seminarObj.getString("ended_at")));
+			seminar.setStartedAt(Var.sdf.parse(seminarObj.getString("opened_at")));
+			seminar.setEndedAt(Var.sdf.parse(seminarObj.getString("closed_at")));
 			seminar.setUrl(seminarObj.getString("url"));
 			return Boolean.TRUE;
 		}catch(Exception ex){

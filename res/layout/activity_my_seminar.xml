@@ -7,11 +7,17 @@
     tools:context=".LogActivity" >
 
     <ListView
-        android:id="@+id/lv_log"
+        android:id="@+id/lv_seminar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1" >
 
     </ListView>
+
+    <Button
+        android:id="@+id/bt_reload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/ms_c_reload" />
 
 </LinearLayout>
