@@ -48,9 +48,13 @@
     <string name="at_msg_attend_complete">出席処理が完了しました</string>
     <string name="at_msg_exec_attend">出席処理中……</string>
     <string name="at_msg_please_touch">もう一度NFCタグにタッチしてください。</string>
+    
     <string name="cf_c_host">HOST[:PORT]</string>
+    
+    <string name="ms_title">主催中のセミナー</string>
+    <string name="ms_c_reload">セミナーリスト更新</string>
+    
     <string name="menu_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
     <string name="title_activity_log">出席履歴</string>
 
 </resources>

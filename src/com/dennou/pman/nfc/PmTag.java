@@ -18,6 +18,7 @@ import android.util.Log;
 import android.util.Xml.Encoding;
 
 import com.dennou.pman.data.Seat;
+import com.dennou.pman.data.Seminar;
 import com.dennou.pman.data.Var;
 
 public class PmTag {
@@ -214,6 +215,32 @@ public class PmTag {
 		}
     }
 
+    @SuppressLint("DefaultLocale")
+	public static NdefMessage getNdefMessage(Context context, Seminar seminar){
+		try {
+			String uriFormat = Var.getUri(Var.ATTEND_URI, context);
+			String uri = String.format(Locale.US, uriFormat, seminar.getId(), Uri.encode(seminar.getNfcTagSign()));
+			byte[] uriData = uri.getBytes(Charset.forName(Encoding.US_ASCII.name()));
+			ByteBuffer bb = ByteBuffer.allocate(uriData.length + 1);
+			bb.put((byte)0);
+			bb.put(uriData);
+			
+			NdefRecord primary = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, new byte[]{'U'}, new byte[0], bb.array());
+			ByteBuffer bbSecret = ByteBuffer.allocate(seminar.getNfcTagSecret().getBytes(Encoding.US_ASCII.toString()).length + 1);
+			bbSecret.put((byte)0);
+			bbSecret.put(seminar.getNfcTagSecret().getBytes(Encoding.US_ASCII.toString()));
+			
+			NdefRecord secret = new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
+					MIME.getBytes(Encoding.US_ASCII.toString()), new byte[0], bbSecret.array());
+			
+			NdefMessage ndef = new NdefMessage(new NdefRecord[]{primary, secret});
+			return ndef;
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			return null;
+		}
+    }
+    
     public void readSecret() throws Exception
     {
     	MifareClassic mf = MifareClassic.get(tag);

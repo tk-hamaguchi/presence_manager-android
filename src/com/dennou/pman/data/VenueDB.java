@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 public class VenueDB extends SQLiteOpenHelper {
-	private static final int DB_VERSION = 9;
+	private static final int DB_VERSION = 11;
 	public static final String ADMIN_DB = "admin.db";
 	public static final String USER_DB = "user.db";
 	private SQLiteDatabase db;
@@ -67,7 +67,10 @@ public class VenueDB extends SQLiteOpenHelper {
 								"description TEXT,"+
 								"url TEXT,"+
 								"venue_name TEXT,"+
-								"seat_name TEXT"
+								"seat_name TEXT,"+
+								"nfc_tag_id INTEGER,"+
+								"nfc_tag_secret TEXT,"+
+								"nfc_tag_sign TEXT"
 								));
 				
 				/* ダミーデータ生成

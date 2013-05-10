@@ -10,6 +10,14 @@ import com.esp.common.handler.IAlertActivity;
 @SuppressWarnings("deprecation")
 public class BaseActivity extends Activity implements IAlertActivity{
 	
+	protected AlertHandler alert;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		alert = new AlertHandler(this);
+	}
+
 	@Override
 	public void showMessage(int id, String message) {
 		try {

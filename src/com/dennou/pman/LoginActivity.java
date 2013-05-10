@@ -40,7 +40,6 @@ public class LoginActivity extends BaseActivity{
 	private static final int INDEX_HOME = 1;
 	
 	private WebView webView;
-	private AlertHandler alert;
 	private Dialog dialog;
 	private TempData tempData;
 	
@@ -50,7 +49,6 @@ public class LoginActivity extends BaseActivity{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
 		
-		alert = new AlertHandler(this);
 		tempData = TempData.getInstance(this);
 	
 		webView = (WebView) findViewById(R.id.wv_login);
@@ -63,9 +61,6 @@ public class LoginActivity extends BaseActivity{
 		btLog.setOnClickListener(btLogClick);
 		Button btSeminar = (Button)findViewById(R.id.bt_seminar);
 		btSeminar.setOnClickListener(btSeminarClick);
-		
-		tempData.setHost("pm2013-03.herokuapp.com");
-		tempData.save(this);
 	}
 
 	@Override
@@ -222,8 +217,10 @@ public class LoginActivity extends BaseActivity{
 		
 		@Override
 		public void onClick(View v) {
-			String uri = Var.getUri(Var.CREATE_SEMINAR_URI, LoginActivity.this);
-			AndroidUtility.openUri(LoginActivity.this, uri);
+			Intent it = new Intent(LoginActivity.this, MySeminarActivity.class);
+			startActivity(it);
+//			String uri = Var.getUri(Var.CREATE_SEMINAR_URI, LoginActivity.this);
+//			AndroidUtility.openUri(LoginActivity.this, uri);
 		}
 	};
 	

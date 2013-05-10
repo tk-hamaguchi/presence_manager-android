@@ -35,10 +35,13 @@ public class Var {
 	public static final String ATTEND_PARAM_SIGN = "sign";
 	public static final String ATTEND_PARAM_SECRET = "secret";
 	
-	//Seminar
+	//Seminar detail
 	public static final String SEMINAR_URI = "%s://%s/api/seminars/detail?code=%%s&sign=%%s";
-	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:MM:ss.SSS'Z'";
+	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:MM:ss'Z'";
 	public static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.JAPAN);
+
+	//My seminar
+	public static final String MY_SEMINAR_URI = "%s://%s/api/seminars";
 	
 	//イベント作成
 	public static final String CREATE_SEMINAR_URI = "%s://%s/seminars";

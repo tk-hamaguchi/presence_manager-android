@@ -20,6 +20,9 @@ public class Seminar {
 	private static final String URL = "url";
 	private static final String VENUE_NAME = "venue_name";
 	private static final String SEAT_NAME = "seat_name";
+	private static final String NFC_TAG_ID = "nfc_tag_id";
+	private static final String NFC_TAG_SECRET = "nfc_tag_secret";
+	private static final String NFC_TAG_SIGN = "nfc_tag_sign";
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.JAPAN);
 	
 	private int id;
@@ -30,6 +33,10 @@ public class Seminar {
 	private String url;
 	private String venueName;
 	private String seatName;
+	//NFC用
+	private int nfcTagId;
+	private String nfcTagSecret;
+	private String nfcTagSign;
 	
 	public Seminar(){
 	}
@@ -43,10 +50,15 @@ public class Seminar {
 		url = c.getString(c.getColumnIndex(URL));
 		venueName = c.getString(c.getColumnIndex(VENUE_NAME));
 		seatName = c.getString(c.getColumnIndex(SEAT_NAME));
+		
+		nfcTagId = c.getInt(c.getColumnIndex(NFC_TAG_ID));
+		nfcTagSecret = c.getString(c.getColumnIndex(NFC_TAG_SECRET));
+		nfcTagSign = c.getString(c.getColumnIndex(NFC_TAG_SIGN));
 	}
 	
 	public static Seminar find(SQLiteDatabase db, int id){
-		Cursor c = db.query(TABLE, new String[]{ID, NAME, STARTED_AT,ENDED_AT,DESCRIPTION,URL,VENUE_NAME,SEAT_NAME},
+		Cursor c = db.query(TABLE, new String[]{ID, NAME, STARTED_AT,ENDED_AT,DESCRIPTION,URL,VENUE_NAME,SEAT_NAME,
+												NFC_TAG_ID, NFC_TAG_SECRET,NFC_TAG_SIGN},
 				"id=?",
 				new String[]{String.valueOf(id)},
 				null, null, null);
@@ -58,7 +70,8 @@ public class Seminar {
 	
 	public static List<Seminar>list(SQLiteDatabase db){
 		List<Seminar>list = new ArrayList<Seminar>();
-		Cursor c = db.query(TABLE, new String[]{ID, NAME, STARTED_AT,ENDED_AT,DESCRIPTION,URL,VENUE_NAME,SEAT_NAME},
+		Cursor c = db.query(TABLE, new String[]{ID, NAME, STARTED_AT,ENDED_AT,DESCRIPTION,URL,VENUE_NAME,SEAT_NAME,
+											NFC_TAG_ID, NFC_TAG_SECRET, NFC_TAG_SIGN},
 				null,
 				null,
 				null, null, STARTED_AT + " DESC");
@@ -66,6 +79,10 @@ public class Seminar {
 			list.add(new Seminar(c));
 		}
 		return list;
+	}
+	
+	public static void deleteAll(SQLiteDatabase db){
+		db.delete(TABLE, null, null);
 	}
 	
 	public void insert(SQLiteDatabase db){
@@ -78,6 +95,9 @@ public class Seminar {
 		values.put(URL, url);
 		values.put(VENUE_NAME, venueName);
 		values.put(SEAT_NAME, seatName);
+		values.put(NFC_TAG_ID, nfcTagId);
+		values.put(NFC_TAG_SECRET, nfcTagSecret);
+		values.put(NFC_TAG_SIGN, nfcTagSign);
 		db.insert(TABLE, null, values);
 	}
 	
@@ -137,5 +157,29 @@ public class Seminar {
 
 	public void setSeatName(String seatName) {
 		this.seatName = seatName;
+	}
+
+	public int getNfcTagId() {
+		return nfcTagId;
+	}
+
+	public void setNfcTagId(int nfcTagId) {
+		this.nfcTagId = nfcTagId;
+	}
+
+	public String getNfcTagSecret() {
+		return nfcTagSecret;
+	}
+
+	public void setNfcTagSecret(String nfcTagSecret) {
+		this.nfcTagSecret = nfcTagSecret;
+	}
+
+	public String getNfcTagSign() {
+		return nfcTagSign;
+	}
+
+	public void setNfcTagSign(String nfcTagSign) {
+		this.nfcTagSign = nfcTagSign;
 	}
 }

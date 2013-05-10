@@ -39,7 +39,6 @@ import com.esp.common.handler.AlertHandler;
 public class TagFormatActivity extends BaseActivity{
 	private static final String TAG = "TagFormatActivity";
 
-	private AlertHandler alert;
 	private AlertDialog dialog;
 	
 	//NFC関係
@@ -57,9 +56,6 @@ public class TagFormatActivity extends BaseActivity{
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_tag_format);
-		
-		//ALertDialog
-		alert = new AlertHandler(this);
 		
 		//NFC
 		nfcAdapter = NfcAdapter.getDefaultAdapter(this);
