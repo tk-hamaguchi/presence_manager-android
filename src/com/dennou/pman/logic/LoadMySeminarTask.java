@@ -57,6 +57,7 @@ public class LoadMySeminarTask extends AsyncTask<String, Void, Boolean> {
 			for(int i=0; i<seminarArray.length(); i++){
 				JSONObject seminarObj = seminarArray.getJSONObject(i).getJSONObject("seminar");
 				Seminar seminar = new Seminar();
+				seminar.setId(seminarObj.getInt("id"));
 				seminar.setName(seminarObj.getString("name"));
 				seminar.setDescription(seminarObj.getString("description"));
 				seminar.setStartedAt(Var.sdf.parse(seminarObj.getString("opened_at")));

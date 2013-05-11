@@ -61,9 +61,11 @@ public class LoadSeminarDetailTask extends AsyncTask<String, Void, Boolean> {
 			venue = new Venue();
 			venue.setName(venueObj.getString("name"));
 			//Seat
-			JSONObject seatObj = json.getJSONObject("seat");
 			seat = new Seat();
-			seat.setName(seatObj.getString("name"));
+			if(json.has("seat")){
+				JSONObject seatObj = json.getJSONObject("seat");
+				seat.setName(seatObj.getString("name"));
+			}
 			
 			//Seminar
 			JSONObject seminarObj = json.getJSONObject("seminar");

@@ -68,8 +68,13 @@ public class MySeminarActivity extends BaseActivity {
 		LoadMySeminarTask task = new LoadMySeminarTask(this){
 			@Override
 			protected void onPostExecute(Boolean result) {
-				alert.obtainMessage(AlertHandler.ID_DISMISS).sendToTarget();
-				loadDb();
+				if(result){
+					alert.obtainMessage(AlertHandler.ID_DISMISS).sendToTarget();
+					alert.obtainMessage(AlertHandler.ID_SHOW_TOAST, R.string.msg_comm_complete, 0).sendToTarget();
+					loadDb();
+				}else{
+					alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.msg_comm_error, 0).sendToTarget();
+				}
 			}			
 		};
 		task.execute(new String[]{});
@@ -111,6 +116,7 @@ public class MySeminarActivity extends BaseActivity {
 			Seminar seminar = (Seminar)adapter.getItemAtPosition(position);
 			Intent it = new Intent(MySeminarActivity.this, NfcActivity.class);
 			NdefMessage ndef = PmTag.getNdefMessage(MySeminarActivity.this, seminar);
+			it.putExtra(Intent.EXTRA_TITLE, seminar.getName());
 			it.putExtra(NfcActivity.TARGET_DATA, (Parcelable)ndef);
 			it.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 			startActivity(it);

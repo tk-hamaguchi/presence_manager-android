@@ -149,35 +149,12 @@ public class LoginActivity extends BaseActivity{
 		List<Seminar> list;
 		VenueDB db = new VenueDB(this, VenueDB.USER_DB);
 		try{
-			Calendar cal = Calendar.getInstance();
 			db.setReadableDb();
 			list = Seminar.list(db.getDb());
-			Seminar s = new Seminar();
-			s.setName("Android講習会");
-			s.setStartedAt(new Date(0));
-			cal.add(Calendar.DAY_OF_MONTH, 1);
-			s.setEndedAt(cal.getTime());
-			s.setVenueName("大講義室--3");
-			s.setSeatName("A-29");
-			s.setId(10000);
-			s.setUrl("http://m.yahoo.co.jp/");
-			list.add(s);
-			
-			s = new Seminar();
-			s.setName("Android講習会-2");
-			s.setStartedAt(new Date(0));
-			s.setEndedAt(cal.getTime());
-			s.setVenueName("大講義室--3");
-			s.setSeatName("A-30");
-			s.setId(10000);
-			s.setUrl("http://m.yahoo.co.jp/");
-			list.add(s);
-			
-			cal.set(Calendar.HOUR, 0);
-			cal.set(Calendar.MINUTE, 0);
 			Date now = Calendar.getInstance().getTime();
-			
 			ViewGroup v = (ViewGroup)findViewById(R.id.inc_seminar);
+
+			//直近の1件を表示する
 			if(list.size() != 0 && now.getTime() < list.get(0).getEndedAt().getTime()){
 				Seminar seminar = list.get(0);
 				SeminarAdapter.showSeminar(v, seminar);

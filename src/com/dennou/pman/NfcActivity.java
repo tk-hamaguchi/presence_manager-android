@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.dennou.pman.data.TempData;
 import com.esp.common.handler.AlertHandler;
@@ -103,6 +104,8 @@ public class NfcActivity extends BaseActivity{
 		
 		Intent it = getIntent();
 		targetData = it.getParcelableExtra(TARGET_DATA);
+		TextView tvTitle = (TextView)findViewById(R.id.tv_title);
+		tvTitle.setText(it.getStringExtra(Intent.EXTRA_TITLE));
 	}
 	
 	private void showPleaseLogin(){
@@ -148,7 +151,7 @@ public class NfcActivity extends BaseActivity{
 			protected void onPostExecute(Boolean result) {
 				if(result){
 					targetData= null;
-					Message.obtain(alert, AlertHandler.ID_SHOW_DLG, R.string.tf_msg_complete, 0).sendToTarget();
+					showCompleteMessage();
 				}else{
 					Message.obtain(alert, AlertHandler.ID_SHOW_DLG, R.string.tf_msg_failed, 0).sendToTarget();
 				}
@@ -158,6 +161,20 @@ public class NfcActivity extends BaseActivity{
 			Message.obtain(alert, AlertHandler.ID_SHOW_MSG, R.string.tf_writing, 0).sendToTarget();
 			atask.execute(new Tag[]{tag});
 		}
+	}
+	
+	private void showCompleteMessage(){
+		AlertDialog.Builder ab= new AlertDialog.Builder(this);
+		ab.setPositiveButton(R.string.c_ok, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				finish();
+			}
+		});
+		ab.setTitle(R.string.app_name);
+		ab.setMessage(R.string.tf_msg_complete);
+		ab.setCancelable(false);
+		ab.show();
 	}
 	
 	private OnClickListener btCancelClick = new OnClickListener() {

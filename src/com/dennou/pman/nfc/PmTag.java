@@ -219,7 +219,7 @@ public class PmTag {
 	public static NdefMessage getNdefMessage(Context context, Seminar seminar){
 		try {
 			String uriFormat = Var.getUri(Var.ATTEND_URI, context);
-			String uri = String.format(Locale.US, uriFormat, seminar.getId(), Uri.encode(seminar.getNfcTagSign()));
+			String uri = String.format(Locale.US, uriFormat, seminar.getNfcTagId(), Uri.encode(seminar.getNfcTagSign()));
 			byte[] uriData = uri.getBytes(Charset.forName(Encoding.US_ASCII.name()));
 			ByteBuffer bb = ByteBuffer.allocate(uriData.length + 1);
 			bb.put((byte)0);
@@ -236,6 +236,31 @@ public class PmTag {
 			NdefMessage ndef = new NdefMessage(new NdefRecord[]{primary, secret});
 			return ndef;
 		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			return null;
+		}
+    }
+    
+    public static NdefMessage getNdefMessage(Context context, Seat seat){
+		try {
+			String uriFormat = Var.getUri(Var.ATTEND_URI, context);
+			String uri = String.format(Locale.US, uriFormat, seat.getId(), Uri.encode(seat.getSign()));
+			byte[] uriData = uri.getBytes(Charset.forName(Encoding.US_ASCII.name()));
+			ByteBuffer bb = ByteBuffer.allocate(uriData.length + 1);
+			bb.put((byte)0);
+			bb.put(uriData);
+			
+			NdefRecord primary = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, new byte[]{'U'}, new byte[0], bb.array());
+			ByteBuffer bbSecret = ByteBuffer.allocate(seat.getSecret().getBytes(Encoding.US_ASCII.toString()).length + 1);
+			bbSecret.put((byte)0);
+			bbSecret.put(seat.getSecret().getBytes(Encoding.US_ASCII.toString()));
+			
+			NdefRecord secret = new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
+					MIME.getBytes(Encoding.US_ASCII.toString()), new byte[0], bbSecret.array());
+			
+			NdefMessage ndef = new NdefMessage(new NdefRecord[]{primary, secret});
+			return ndef;
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}

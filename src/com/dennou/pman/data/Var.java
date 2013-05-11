@@ -7,8 +7,8 @@ import android.content.Context;
 
 public class Var {
 	//タグ用
-	//public static final String SV_HOST = "pmanager.ddo.jp:3000";
-	public static final String SV_HOST = "presence-manager.herokuapp.com";
+	public static final String SV_HOST = "pmanager.ddo.jp:3000";
+	//public static final String SV_HOST = "presence-manager.herokuapp.com";
 	public static final String SV_SCHEME = "http";
 	public static final String HEADER_AUTHORIZATION = "Authorization";
 	public static final String HEADER_BEARER = "Bearer %s";
@@ -37,7 +37,7 @@ public class Var {
 	
 	//Seminar detail
 	public static final String SEMINAR_URI = "%s://%s/api/seminars/detail?code=%%s&sign=%%s";
-	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:MM:ss'Z'";
+	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 	public static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.JAPAN);
 
 	//My seminar

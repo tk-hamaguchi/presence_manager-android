@@ -62,7 +62,6 @@ public class PostAttendTask extends AsyncTask<String, Void, Boolean> {
 			if ( statusCode != HttpStatus.SC_OK )
 				return Boolean.FALSE;
 			
-			
 	        //Venue
 	        String body = EntityUtils.toString(response.getEntity(), Var.CHARSET);
 	        json = new JSONObject(body);
@@ -70,10 +69,13 @@ public class PostAttendTask extends AsyncTask<String, Void, Boolean> {
 	        JSONObject venueObj = json.getJSONObject("venue");
 			Venue venue = new Venue();
 			venue.setName(venueObj.getString("name"));
+			
 			//Seat
-			JSONObject seatObj = json.getJSONObject("seat");
 			Seat seat = new Seat();
-			seat.setName(seatObj.getString("name"));
+			if(json.has("seat")){
+				JSONObject seatObj = json.getJSONObject("seat");
+				seat.setName(seatObj.getString("name"));
+			}
 			
 			//Seminar
 			JSONObject seminarObj = json.getJSONObject("seminar");
@@ -96,7 +98,7 @@ public class PostAttendTask extends AsyncTask<String, Void, Boolean> {
 				db.closeWithoutCommit();
 			}
 			return Boolean.TRUE;
-		}  catch (Exception e) {
+		}catch (Exception e) {
 			e.printStackTrace();
 			return Boolean.FALSE;
 		}

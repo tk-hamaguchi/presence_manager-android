@@ -1,7 +1,5 @@
 package com.dennou.pman;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import android.app.Activity;
@@ -39,30 +37,8 @@ public class LogActivity extends Activity {
 	private void loadLog(){
 		VenueDB db = new VenueDB(this, VenueDB.USER_DB);
 		try{
-			Calendar cal = Calendar.getInstance();
 			db.setReadableDb();
 			List<Seminar> list = Seminar.list(db.getDb());
-			Seminar s = new Seminar();
-			s.setName("Android講習会");
-			s.setStartedAt(new Date(0));
-			cal.add(Calendar.DAY_OF_MONTH, 1);
-			s.setEndedAt(cal.getTime());
-			s.setVenueName("大講義室--3");
-			s.setSeatName("A-29");
-			s.setId(10000);
-			s.setUrl("http://m.yahoo.co.jp/");
-			list.add(s);
-			
-			s = new Seminar();
-			s.setName("Android講習会-2");
-			s.setStartedAt(new Date(0));
-			s.setEndedAt(cal.getTime());
-			s.setVenueName("大講義室--3");
-			s.setSeatName("A-30");
-			s.setId(10000);
-			s.setUrl("http://m.yahoo.co.jp/");
-			list.add(s);
-			
 			for(Seminar seminar:list){
 				sa.add(seminar);
 			}

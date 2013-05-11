@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.dennou.pman"
-    android:versionCode="101"
-    android:versionName="1.0.1" >
+    android:versionCode="102"
+    android:versionName="1.0.2" >
 
     <uses-sdk
         android:minSdkVersion="10"
@@ -25,31 +25,38 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.dennou.pman.TagFormatActivity" >
+        <activity android:name="TagFormatActivity" android:label="@string/tf_title">
         </activity>
-        <activity android:name="com.dennou.pman.AttendActivity" >
+        <activity android:name="AttendActivity" >
             <intent-filter>
                 <data
                     android:host="pm2013-03.herokuapp.com"
                     android:scheme="http" />
 
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-        </activity>
-        <activity android:name="com.dennou.pman.PrefActivity" >
+            <intent-filter>
+                <data
+                    android:host="pmanager.ddo.jp"
+                    android:scheme="http" />
+
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            </activity>
+        <activity android:name="PrefActivity" >
         </activity>
         <activity
-            android:name="com.dennou.pman.LogActivity"
+            android:name="LogActivity"
             android:label="@string/title_activity_log" >
         </activity>
         <activity
-            android:name="com.dennou.pman.MySeminarActivity"
+            android:name="MySeminarActivity"
             android:label="@string/ms_title" >
         </activity>
         <activity
-            android:name="com.dennou.pman.NfcActivity" android:noHistory="true">
+            android:name="NfcActivity" android:noHistory="true" android:label="@string/nf_title">
         </activity>
         </application>
 

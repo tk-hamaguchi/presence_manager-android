@@ -17,7 +17,7 @@ public class SeminarAdapter extends ArrayAdapter<Seminar> {
 	private Activity activity;
 	
 	public SeminarAdapter(Activity context) {
-		super(context, R.layout.item_seminar);
+		super(context, R.layout.item_seminar_innner);
 		this.activity = context;
 	}
 	
@@ -26,7 +26,7 @@ public class SeminarAdapter extends ArrayAdapter<Seminar> {
 		if(v == null)
 		{
 			LayoutInflater ll = (LayoutInflater)activity.getLayoutInflater();
-			v = ll.inflate(R.layout.item_seminar, null);
+			v = ll.inflate(R.layout.item_seminar_innner, null);
 		}
 		showSeminar((ViewGroup)v, getItem(position));
 		return v;
@@ -38,13 +38,17 @@ public class SeminarAdapter extends ArrayAdapter<Seminar> {
 		
 		TextView tvDate = (TextView)vg.findViewById(R.id.tv_date);
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.JAPAN);
-		tvDate.setText(sdf.format(seminar.getStartedAt()));
+		tvDate.setText(sdf.format(seminar.getStartedAt()) + "\n～\n" + sdf.format(seminar.getEndedAt()));
 		
 		TextView tvVenue = (TextView)vg.findViewById(R.id.tv_venue);
 		tvVenue.setText(seminar.getVenueName());
 		
 		TextView tvSeat = (TextView)vg.findViewById(R.id.tv_seat);
-		tvSeat.setText(seminar.getSeatName());
+		if(seminar.getSeatName() != null && seminar.getSeatName().length()!=0){
+			tvSeat.setText(seminar.getSeatName());
+		}else{
+			tvSeat.setText("--");
+		}
 		
 		TextView tvDescription = (TextView)vg.findViewById(R.id.tv_description);
 		tvDescription.setText(seminar.getDescription());

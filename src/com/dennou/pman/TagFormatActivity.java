@@ -3,17 +3,10 @@ package com.dennou.pman;
 import java.util.List;
 
 import android.app.AlertDialog;
-import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.nfc.NfcAdapter;
-import android.nfc.Tag;
-import android.nfc.tech.Ndef;
-import android.nfc.tech.NdefFormatable;
-import android.os.AsyncTask;
+import android.nfc.NdefMessage;
 import android.os.Bundle;
-import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,7 +19,6 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 
-import com.dennou.pman.R;
 import com.dennou.pman.data.Seat;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Venue;
@@ -39,37 +31,14 @@ import com.esp.common.handler.AlertHandler;
 public class TagFormatActivity extends BaseActivity{
 	private static final String TAG = "TagFormatActivity";
 
-	private AlertDialog dialog;
-	
-	//NFC関係
-	private NfcAdapter nfcAdapter;
-	private PendingIntent pendingIntent;
-	private IntentFilter[] filters;
-	private String[][] techs;
-	
 	//Roomデータ
 	private ArrayAdapter<Venue> aaVenue;
 	private ArrayAdapter<Seat> aaSeat;
-	private Seat targetSeat;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_tag_format);
-		
-		//NFC
-		nfcAdapter = NfcAdapter.getDefaultAdapter(this);
-		if(nfcAdapter != null){
-			pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
-					getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-			IntentFilter tech = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
-			filters = new IntentFilter[]{tech};
-			
-			// Setup a tech list for MifareaClassic tags
-			techs = new String[][] { 
-					new String[]{Ndef.class.getName()},
-					new String[]{NdefFormatable.class.getName()} };
-		}
 		
 		//List
 		aaVenue = new ArrayAdapter<Venue>(this, android.R.layout.simple_list_item_1);
@@ -87,44 +56,8 @@ public class TagFormatActivity extends BaseActivity{
 	}
 	
 	@Override
-	protected void onResume() {
-		super.onResume();
-		if(nfcAdapter != null)
-			nfcAdapter.enableForegroundDispatch(this, pendingIntent, filters, techs);
-	}
-	
-	@Override
-	protected void onPause() {
-		super.onPause();
-		if(nfcAdapter != null)
-			nfcAdapter.disableForegroundDispatch(this);
-	}
-	
-	@Override
 	protected void onStop() {
 		super.onStop();
-		if(dialog != null && dialog.isShowing())
-			dialog.dismiss();
-		targetSeat = null;
-	}
-	
-	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		setIntent(intent);
-		if(NfcAdapter.ACTION_TECH_DISCOVERED.equals(intent.getAction())){
-			Tag tag = (Tag)intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-			if(Ndef.get(tag)!=null || NdefFormatable.get(tag)!=null){
-				if(targetSeat != null)
-					writeTag(tag);
-			}else if(tag != null){
-				alert.obtainMessage(AlertHandler.ID_SHOW_TOAST,
-						R.string.tf_msg_unsupport_tag, 0).sendToTarget();
-				Log.d(TAG, tag.toString());
-			}
-		}else{
-			Log.d(TAG, intent.getAction());
-		}
 	}
 	
 	@Override
@@ -184,6 +117,7 @@ public class TagFormatActivity extends BaseActivity{
 				aaSeat.add(seat);
 			}
 		}else{
+			Log.d(TAG, "seat=0, go load seat");
 			loadSeat(venue);
 		}
 	}
@@ -192,6 +126,7 @@ public class TagFormatActivity extends BaseActivity{
 		VenueDB db = new VenueDB(this, VenueDB.ADMIN_DB);
 		try{
 			db.setWritableDb();
+			aaVenue.clear();
 			List<Venue>roomList = Venue.list(db.getDb());
 			for(Venue room:roomList){
 				aaVenue.add(room);
@@ -247,49 +182,15 @@ public class TagFormatActivity extends BaseActivity{
 	private OnItemClickListener lvItemClick = new OnItemClickListener() {
 		@Override
 		public void onItemClick(AdapterView<?> av, View v, int position, long id) {
-			targetSeat = aaSeat.getItem(position);
-			AlertDialog.Builder ab = new AlertDialog.Builder(TagFormatActivity.this);
-			ab.setTitle(R.string.app_name);
-			ab.setMessage(R.string.tf_msg_write);
-			ab.setIcon(android.R.drawable.ic_popup_disk_full);
-			ab.setNegativeButton(R.string.c_cancel, new DialogInterface.OnClickListener() {
-				
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					targetSeat = null;
-					dialog.dismiss();
-				}
-			});
-			dialog = ab.show();
+			Seat seat = aaSeat.getItem(position);
+			NdefMessage ndef = PmTag.getNdefMessage(TagFormatActivity.this, seat);
+			Intent it = new Intent(TagFormatActivity.this, NfcActivity.class);
+			it.putExtra(Intent.EXTRA_TITLE, seat.getName());
+			it.putExtra(NfcActivity.TARGET_DATA, ndef);
+			startActivity(it);
 		}
 	};
-	
-	
-	private void writeTag(Tag tag){
-		//Tag初期化
-		AsyncTask<Tag, Void, Boolean> atask = new AsyncTask<Tag, Void, Boolean>(){
-			@Override
-			protected Boolean doInBackground(Tag... params) {
-				AlertHandler.wait(100);
-				PmTag pmTag = new PmTag(params[0]);
-				return (Boolean)pmTag.writeSeatTag(targetSeat, TagFormatActivity.this);
-			}
-			
-			@Override
-			protected void onPostExecute(Boolean result) {
-				if(result){
-					Message.obtain(alert, AlertHandler.ID_SHOW_DLG, R.string.tf_msg_complete, 0).sendToTarget();
-				}else{
-					Message.obtain(alert, AlertHandler.ID_SHOW_DLG, R.string.tf_msg_failed, 0).sendToTarget();
-				}
-				dialog.dismiss();
-				targetSeat = null;
-			}
-		};
-		Message.obtain(alert, AlertHandler.ID_SHOW_MSG, R.string.tf_writing, 0).sendToTarget();
-		atask.execute(new Tag[]{tag});
-	}
-	
+		
 	private View.OnClickListener btRefreshClick = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
