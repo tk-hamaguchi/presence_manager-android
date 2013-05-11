@@ -7,8 +7,8 @@ import android.content.Context;
 
 public class Var {
 	//タグ用
-	public static final String SV_HOST = "pmanager.ddo.jp:3000";
-	//public static final String SV_HOST = "presence-manager.herokuapp.com";
+	//public static final String SV_HOST = "pmanager.ddo.jp:3000";
+	public static final String SV_HOST = "pm2013-03.herokuapp.com";
 	public static final String SV_SCHEME = "http";
 	public static final String HEADER_AUTHORIZATION = "Authorization";
 	public static final String HEADER_BEARER = "Bearer %s";

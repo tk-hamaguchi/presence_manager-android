@@ -16,6 +16,8 @@ public class Seminar {
 	private static final String NAME = "name";
 	private static final String STARTED_AT = "started_at";
 	private static final String ENDED_AT = "ended_at";
+	private static final String OPENED_AT = "opened_at";
+	private static final String CLOSED_AT = "closed_at";
 	private static final String DESCRIPTION = "description";
 	private static final String URL = "url";
 	private static final String VENUE_NAME = "venue_name";
@@ -29,6 +31,8 @@ public class Seminar {
 	private String name;
 	private Date startedAt;
 	private Date endedAt;
+	private Date openedAt;
+	private Date closedAt;
 	private String description;
 	private String url;
 	private String venueName;
@@ -46,6 +50,8 @@ public class Seminar {
 		name = c.getString(c.getColumnIndex(NAME));
 		startedAt = new Date(c.getLong(c.getColumnIndex(STARTED_AT)));
 		endedAt = new Date(c.getLong(c.getColumnIndex(ENDED_AT)));
+		openedAt = new Date(c.getLong(c.getColumnIndex(OPENED_AT)));
+		closedAt = new Date(c.getLong(c.getColumnIndex(CLOSED_AT)));
 		description = c.getString(c.getColumnIndex(DESCRIPTION));
 		url = c.getString(c.getColumnIndex(URL));
 		venueName = c.getString(c.getColumnIndex(VENUE_NAME));
@@ -57,7 +63,7 @@ public class Seminar {
 	}
 	
 	public static Seminar find(SQLiteDatabase db, int id){
-		Cursor c = db.query(TABLE, new String[]{ID, NAME, STARTED_AT,ENDED_AT,DESCRIPTION,URL,VENUE_NAME,SEAT_NAME,
+		Cursor c = db.query(TABLE, new String[]{ID, NAME, STARTED_AT,ENDED_AT,OPENED_AT,CLOSED_AT,DESCRIPTION,URL,VENUE_NAME,SEAT_NAME,
 												NFC_TAG_ID, NFC_TAG_SECRET,NFC_TAG_SIGN},
 				"id=?",
 				new String[]{String.valueOf(id)},
@@ -70,7 +76,7 @@ public class Seminar {
 	
 	public static List<Seminar>list(SQLiteDatabase db){
 		List<Seminar>list = new ArrayList<Seminar>();
-		Cursor c = db.query(TABLE, new String[]{ID, NAME, STARTED_AT,ENDED_AT,DESCRIPTION,URL,VENUE_NAME,SEAT_NAME,
+		Cursor c = db.query(TABLE, new String[]{ID, NAME, STARTED_AT,ENDED_AT,OPENED_AT,CLOSED_AT,DESCRIPTION,URL,VENUE_NAME,SEAT_NAME,
 											NFC_TAG_ID, NFC_TAG_SECRET, NFC_TAG_SIGN},
 				null,
 				null,
@@ -91,6 +97,8 @@ public class Seminar {
 		values.put(NAME, name);
 		values.put(STARTED_AT, startedAt.getTime());
 		values.put(ENDED_AT, endedAt.getTime());
+		values.put(OPENED_AT, openedAt.getTime());
+		values.put(CLOSED_AT, closedAt.getTime());
 		values.put(DESCRIPTION, description);
 		values.put(URL, url);
 		values.put(VENUE_NAME, venueName);
@@ -181,5 +189,21 @@ public class Seminar {
 
 	public void setNfcTagSign(String nfcTagSign) {
 		this.nfcTagSign = nfcTagSign;
+	}
+
+	public Date getOpenedAt() {
+		return openedAt;
+	}
+
+	public void setOpenedAt(Date openedAt) {
+		this.openedAt = openedAt;
+	}
+
+	public Date getClosedAt() {
+		return closedAt;
+	}
+
+	public void setClosedAt(Date closedAt) {
+		this.closedAt = closedAt;
 	}
 }

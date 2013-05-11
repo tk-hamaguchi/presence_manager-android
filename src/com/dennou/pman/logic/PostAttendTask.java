@@ -83,8 +83,10 @@ public class PostAttendTask extends AsyncTask<String, Void, Boolean> {
 			seminar.setId(seminarObj.getInt("id"));
 			seminar.setName(seminarObj.getString("name"));
 			seminar.setDescription(seminarObj.getString("description"));
-			seminar.setStartedAt(Var.sdf.parse(seminarObj.getString("opened_at")));
-			seminar.setEndedAt(Var.sdf.parse(seminarObj.getString("closed_at")));
+			seminar.setStartedAt(Var.sdf.parse(seminarObj.getString("started_at")));
+			seminar.setEndedAt(Var.sdf.parse(seminarObj.getString("ended_at")));
+			seminar.setOpenedAt(Var.sdf.parse(seminarObj.getString("opened_at")));
+			seminar.setClosedAt(Var.sdf.parse(seminarObj.getString("closed_at")));
 			seminar.setUrl(seminarObj.getString("url"));
 			seminar.setVenueName(venue.getName());
 			seminar.setSeatName(seat.getName());
