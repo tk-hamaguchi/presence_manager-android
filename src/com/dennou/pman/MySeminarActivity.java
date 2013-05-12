@@ -85,9 +85,15 @@ public class MySeminarActivity extends BaseActivity {
 			@Override
 			public View getView(int position, View v, ViewGroup parent) {
 				View ret = super.getView(position, v, parent);
+				
+				//タイトルにURLをリンク
 				TextView tvSeminar = (TextView)ret.findViewById(R.id.tv_seminar);
 				tvSeminar.setTag(getItem(position));
 				tvSeminar.setOnClickListener(seminarClick);
+				
+				//座席タグじゃないので、非表示にする
+				ViewGroup llSeatRow = (ViewGroup)ret.findViewById(R.id.ll_seat_row);
+				llSeatRow.setVisibility(View.GONE);
 				return ret;
 			}
 		};
@@ -97,8 +103,6 @@ public class MySeminarActivity extends BaseActivity {
 		@Override
 		public void onClick(View v) {
 			Seminar seminar = (Seminar)v.getTag();
-			if(seminar.getUrl() == null || !seminar.getUrl().startsWith("http"))
-				return;
 			AndroidUtility.openUri(MySeminarActivity.this, seminar.getUrl());
 		}
 	};

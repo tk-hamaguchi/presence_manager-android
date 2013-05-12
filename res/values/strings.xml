@@ -22,7 +22,7 @@
     <string name="c_ok">OK</string>
     <string name="c_cancel">Cancel</string>
     
-    <string name="msg_comm_get">データ取得中</string>
+    <string name="msg_comm_get">データ取得中……</string>
     <string name="msg_comm_error">データ取得に失敗しました</string>
     <string name="msg_comm_complete">更新が完了しました</string>
     
@@ -42,6 +42,8 @@
     <string name="lo_msg_login_failed">ログインに失敗しました</string>
     <string name="lo_msg_login_complete">ログインが完了しました</string>
     <string name="lo_msg_ask_logout">ログアウトしてもよろしいですか？</string>
+    <string name="lo_alt_sign_in_twitter">Twitterでログインする</string>
+    
     <string name="at_c_venue">会場</string>
     <string name="at_c_seat">座席番号</string>
     <string name="at_c_event">イベント</string>

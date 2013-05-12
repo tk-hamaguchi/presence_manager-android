@@ -1,12 +1,8 @@
 package com.dennou.pman;
 
-import java.text.SimpleDateFormat;
-import java.util.Locale;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.os.AsyncTask.Status;
@@ -15,6 +11,7 @@ import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -22,8 +19,10 @@ import com.dennou.pman.data.Seat;
 import com.dennou.pman.data.Seminar;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Venue;
+import com.dennou.pman.logic.AndroidUtility;
 import com.dennou.pman.logic.LoadSeminarDetailTask;
 import com.dennou.pman.logic.PostAttendTask;
+import com.dennou.pman.logic.SeminarAdapter;
 import com.dennou.pman.nfc.PmTag;
 import com.esp.common.handler.AlertHandler;
 
@@ -31,8 +30,6 @@ public class AttendActivity extends BaseActivity{
 	private static final String TAG = "AttendActivity";
 
 	private AlertDialog dialog;
-	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.JAPAN);
-	
 	//NFC関係
 	private LoadSeminarDetailTask task;
 	private PmTag pmTag;
@@ -98,23 +95,17 @@ public class AttendActivity extends BaseActivity{
 	}
 	
 	private void showSeminar(Seminar seminar, Venue venue, Seat seat){
-		TextView tvSeminar = (TextView)findViewById(R.id.tv_seminar);
-		tvSeminar.setText(seminar.getName());
-		TextView tvVenue = (TextView)findViewById(R.id.tv_venue);
-		tvVenue.setText(venue.getName());
-		TextView tvSeat = (TextView)findViewById(R.id.tv_seat);
-		tvSeat.setText(seat.getName());
-		TextView tvDate = (TextView)findViewById(R.id.tv_date);
-		tvDate.setText(sdf.format(seminar.getStartedAt()));
-		TextView tvDescription = (TextView)findViewById(R.id.tv_description);
-		tvDescription.setText(seminar.getDescription());
-		TextView tvUrl = (TextView)findViewById(R.id.tv_url);
-		tvUrl.setText(seminar.getUrl());
-		tvUrl.setTag(seminar.getUrl());
-		tvUrl.setOnClickListener(new View.OnClickListener() {
+		ViewGroup vg = (ViewGroup)findViewById(R.id.inc_seminar);
+		seminar.setVenueName(venue.getName());
+		seminar.setSeatName(seat.getName()!=null? seat.getName(): "--");
+		SeminarAdapter.showSeminar(vg, seminar);
+		TextView tvSeminar = (TextView)vg.findViewById(R.id.tv_seminar);
+		tvSeminar.setTag(seminar);
+		tvSeminar.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				invokeBrowser((String)v.getTag());
+				Seminar seminar = (Seminar)v.getTag();
+				AndroidUtility.openUri(AttendActivity.this, seminar.getUrl());
 			}
 		});
 	}
@@ -135,13 +126,6 @@ public class AttendActivity extends BaseActivity{
 			}
 		});
 		dialog = ab.show();
-	}
-	
-	private void invokeBrowser(String uri){
-		Intent it = new Intent(Intent.ACTION_VIEW);
-		it.addCategory(Intent.CATEGORY_DEFAULT);
-		it.setData(Uri.parse(uri));
-		startActivity(it);
 	}
 	
 	private boolean checkLogin(){

@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
@@ -36,8 +37,9 @@ import com.esp.common.handler.AlertHandler;
 public class LoginActivity extends BaseActivity{
 	private static final String TAG = "LoginActivity";
 	
-	private static final int INDEX_LOGIN = 0;
+	private static final int INDEX_LOGIN_WEB = 0;
 	private static final int INDEX_HOME = 1;
+	private static final int INDEX_LOGIN_START = 2;
 	
 	private WebView webView;
 	private Dialog dialog;
@@ -61,6 +63,8 @@ public class LoginActivity extends BaseActivity{
 		btLog.setOnClickListener(btLogClick);
 		Button btSeminar = (Button)findViewById(R.id.bt_seminar);
 		btSeminar.setOnClickListener(btSeminarClick);
+		ImageButton btLogin = (ImageButton)findViewById(R.id.bt_login);
+		btLogin.setOnClickListener(btLoginClick);
 	}
 
 	@Override
@@ -104,9 +108,7 @@ public class LoginActivity extends BaseActivity{
 	private void setView(){
 		ViewFlipper vf = (ViewFlipper)findViewById(R.id.vf_home);
 		if(tempData.getAuthToken() == null){
-			String uriFormat = Var.getUri(Var.AUTH_URI, this);
-			webView.loadUrl(uriFormat);
-			vf.setDisplayedChild(INDEX_LOGIN);
+			vf.setDisplayedChild(INDEX_LOGIN_START);
 		}else{
 			TextView tvAccount = (TextView)findViewById(R.id.tv_account);
 			tvAccount.setText(tempData.getAccount());
@@ -196,8 +198,16 @@ public class LoginActivity extends BaseActivity{
 		public void onClick(View v) {
 			Intent it = new Intent(LoginActivity.this, MySeminarActivity.class);
 			startActivity(it);
-//			String uri = Var.getUri(Var.CREATE_SEMINAR_URI, LoginActivity.this);
-//			AndroidUtility.openUri(LoginActivity.this, uri);
+		}
+	};
+	
+	private OnClickListener btLoginClick = new OnClickListener(){
+		@Override
+		public void onClick(View v) {
+			ViewFlipper vf = (ViewFlipper)findViewById(R.id.vf_home);
+			vf.setDisplayedChild(INDEX_LOGIN_WEB);
+			String uriFormat = Var.getUri(Var.AUTH_URI, LoginActivity.this);
+			webView.loadUrl(uriFormat);
 		}
 	};
 	
@@ -227,11 +237,11 @@ public class LoginActivity extends BaseActivity{
 		}
 		
 		public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
-			alert.obtainMessage(AlertHandler.ID_SHOW_MSG, R.string.app_name, 0);
+			alert.obtainMessage(AlertHandler.ID_SHOW_MSG, R.string.msg_comm_get, 0).sendToTarget();
 		};
 		
 		public void onPageFinished(WebView view, String url) {
-			alert.obtainMessage(AlertHandler.ID_DISMISS);
+			alert.obtainMessage(AlertHandler.ID_DISMISS).sendToTarget();
 		};
 	};
 }

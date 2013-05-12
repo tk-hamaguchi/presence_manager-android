@@ -16,7 +16,7 @@ public class Var {
 	public static final String CHARSET = "utf-8";
 	
 	//ログイン用
-	public static final String AUTH_URI = "%s://%s/users/auth/twitter";
+	public static final String AUTH_URI = "%s://%s/users/auth/twitter?force_login=true";
 	public static final String AUTH_SCHEME = "com.dennou.pman";
 	public static final String AUTH_PATH = "/auth";
 	public static final String AUTH_ERROR_PATH = "/error";

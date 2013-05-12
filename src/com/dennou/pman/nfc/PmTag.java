@@ -65,11 +65,9 @@ public class PmTag {
 					record.getType()!=null && record.getType()[0]=='U'){
 					Uri uri = Uri.parse(new String(record.getPayload(), Encoding.US_ASCII.toString()));
 					Log.d(TAG, "nfctag uri="+uri);
-					if(Var.SV_HOST.startsWith(uri.getHost())){
-						String code = uri.getQueryParameter(Var.ATTEND_PARAM_NFC_TAG);
-						pmTag.code = Integer.valueOf(code);
-						pmTag.sign = uri.getQueryParameter(Var.ATTEND_PARAM_SIGN);
-					}
+					String code = uri.getQueryParameter(Var.ATTEND_PARAM_NFC_TAG);
+					pmTag.code = Integer.valueOf(code);
+					pmTag.sign = uri.getQueryParameter(Var.ATTEND_PARAM_SIGN);
 				}else if(record.getTnf() == NdefRecord.TNF_MIME_MEDIA && record.getType()!=null){
 					String type = new String(record.getType(),Encoding.US_ASCII.toString());
 					if(PmTag.MIME.equals(type)){
@@ -82,7 +80,7 @@ public class PmTag {
 			if(pmTag.sign !=null && pmTag.secret!=null)
 				return pmTag;
 			return null;
-		} catch (UnsupportedEncodingException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}

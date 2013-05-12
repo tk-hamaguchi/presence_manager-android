@@ -36,16 +36,23 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <TextView
+    <LinearLayout
+        android:id="@+id/ll_seat_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/lo_c_seat" />
+        android:orientation="vertical" >
 
-    <TextView
-        android:id="@+id/tv_seat"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/lo_c_seat" />
+
+        <TextView
+            android:id="@+id/tv_seat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+    </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"
