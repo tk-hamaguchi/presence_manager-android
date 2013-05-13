@@ -1,29 +1,26 @@
 package com.dennou.pman.nfc;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Locale;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
 import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.Tag;
 import android.nfc.tech.MifareClassic;
-import android.nfc.tech.Ndef;
-import android.nfc.tech.NdefFormatable;
 import android.util.Log;
 import android.util.Xml.Encoding;
 
-import com.dennou.pman.data.Seat;
-import com.dennou.pman.data.Seminar;
+import com.dennou.pman.data.NfcTag;
 import com.dennou.pman.data.Var;
 
 public class PmTag {
 	private static final String TAG = "PmTag";
-	public static final String MIME = "application/com.dennou.pm";
+	public static final String MIME = "sign";
 	
 	private static final byte[] madKeyA = new byte[]{(byte)0xA0, (byte)0xA1, (byte)0xA2, (byte)0xA3, (byte)0xA4, (byte)0xA5};
 	private static final byte[] madKeyB = new byte[]{(byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF};
@@ -48,8 +45,10 @@ public class PmTag {
     private Tag tag;
     
     private int code;
-    private String secret;
     private String sign;
+    
+    private byte[] secret;
+    private byte[] uid;
     
     public PmTag() {
 	}
@@ -68,13 +67,10 @@ public class PmTag {
 					String code = uri.getQueryParameter(Var.ATTEND_PARAM_NFC_TAG);
 					pmTag.code = Integer.valueOf(code);
 					pmTag.sign = uri.getQueryParameter(Var.ATTEND_PARAM_SIGN);
-				}else if(record.getTnf() == NdefRecord.TNF_MIME_MEDIA && record.getType()!=null){
+				}else if(record.getTnf() == NdefRecord.TNF_WELL_KNOWN){
 					String type = new String(record.getType(),Encoding.US_ASCII.toString());
-					if(PmTag.MIME.equals(type)){
-						byte dataType = record.getPayload()[0];
-						if(dataType==0)
-							pmTag.secret = new String(record.getPayload(), 1, record.getPayload().length-1);
-					}
+					if(PmTag.MIME.equals(type))
+						pmTag.secret = record.getPayload();
 				}
 			}
 			if(pmTag.sign !=null && pmTag.secret!=null)
@@ -170,91 +166,26 @@ public class PmTag {
 		}
 		return MifareClassic.KEY_DEFAULT;
     }
-    
-    @SuppressLint("DefaultLocale")
-	public boolean writeSeatTag(Seat seat, Context context){
+ 
+	public static NdefMessage getNdefMessage(String host, NfcTag nfcTag, byte[] uid){
 		try {
-			String uriFormat = Var.getUri(Var.ATTEND_URI, context);
-			String uri = String.format(Locale.US, uriFormat, seat.getId(), Uri.encode(seat.getSign()));
+			String uriFormat = Var.getUriWithHost(Var.ATTEND_URI, host);
+			String uri = String.format(Locale.US, uriFormat, nfcTag.getId(), Uri.encode(nfcTag.getSign()));
 			byte[] uriData = uri.getBytes(Charset.forName(Encoding.US_ASCII.name()));
 			ByteBuffer bb = ByteBuffer.allocate(uriData.length + 1);
 			bb.put((byte)0);
 			bb.put(uriData);
-			
 			NdefRecord primary = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, new byte[]{'U'}, new byte[0], bb.array());
-			ByteBuffer bbSecret = ByteBuffer.allocate(seat.getSecret().getBytes(Encoding.US_ASCII.toString()).length + 1);
-			bbSecret.put((byte)0);
-			bbSecret.put(seat.getSecret().getBytes(Encoding.US_ASCII.toString()));
 			
-			NdefRecord secret = new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
-					MIME.getBytes(Encoding.US_ASCII.toString()), new byte[0], bbSecret.array());
-			
-			NdefMessage ndef = new NdefMessage(new NdefRecord[]{primary, secret});
-			
-			Ndef nf = Ndef.get(tag);
-			if(nf != null){
-				nf.connect();
-				nf.writeNdefMessage(ndef);
-				nf.close();
-				return true;
-			}
-			
-			NdefFormatable mf = NdefFormatable.get(tag);
-			if(mf != null){
-				mf.connect();
-				mf.format(ndef);
-				mf.close();
-				return true;
-			}
-			return false;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-    }
-
-    @SuppressLint("DefaultLocale")
-	public static NdefMessage getNdefMessage(Context context, Seminar seminar){
-		try {
-			String uriFormat = Var.getUri(Var.ATTEND_URI, context);
-			String uri = String.format(Locale.US, uriFormat, seminar.getNfcTagId(), Uri.encode(seminar.getNfcTagSign()));
-			byte[] uriData = uri.getBytes(Charset.forName(Encoding.US_ASCII.name()));
-			ByteBuffer bb = ByteBuffer.allocate(uriData.length + 1);
-			bb.put((byte)0);
-			bb.put(uriData);
-			
-			NdefRecord primary = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, new byte[]{'U'}, new byte[0], bb.array());
-			ByteBuffer bbSecret = ByteBuffer.allocate(seminar.getNfcTagSecret().getBytes(Encoding.US_ASCII.toString()).length + 1);
-			bbSecret.put((byte)0);
-			bbSecret.put(seminar.getNfcTagSecret().getBytes(Encoding.US_ASCII.toString()));
-			
-			NdefRecord secret = new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
-					MIME.getBytes(Encoding.US_ASCII.toString()), new byte[0], bbSecret.array());
-			
-			NdefMessage ndef = new NdefMessage(new NdefRecord[]{primary, secret});
-			return ndef;
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			return null;
-		}
-    }
-    
-    public static NdefMessage getNdefMessage(Context context, Seat seat){
-		try {
-			String uriFormat = Var.getUri(Var.ATTEND_URI, context);
-			String uri = String.format(Locale.US, uriFormat, seat.getId(), Uri.encode(seat.getSign()));
-			byte[] uriData = uri.getBytes(Charset.forName(Encoding.US_ASCII.name()));
-			ByteBuffer bb = ByteBuffer.allocate(uriData.length + 1);
-			bb.put((byte)0);
-			bb.put(uriData);
-			
-			NdefRecord primary = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, new byte[]{'U'}, new byte[0], bb.array());
-			ByteBuffer bbSecret = ByteBuffer.allocate(seat.getSecret().getBytes(Encoding.US_ASCII.toString()).length + 1);
-			bbSecret.put((byte)0);
-			bbSecret.put(seat.getSecret().getBytes(Encoding.US_ASCII.toString()));
-			
-			NdefRecord secret = new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
-					MIME.getBytes(Encoding.US_ASCII.toString()), new byte[0], bbSecret.array());
+			SecretKeySpec keySpec = new SecretKeySpec(nfcTag.getSecret().getBytes(Encoding.US_ASCII.toString()), Var.SIGN_LOGIC);
+			Mac mac = Mac.getInstance(Var.SIGN_LOGIC);
+			bb = ByteBuffer.allocate(4 + uid.length);
+			bb.put(uid);
+			bb.putInt(nfcTag.getId());
+			mac.init(keySpec);
+			byte[] sign = mac.doFinal(bb.array());
+			NdefRecord secret = new NdefRecord(NdefRecord.TNF_WELL_KNOWN,
+									MIME.getBytes(Encoding.US_ASCII.toString()), new byte[0], sign);
 			
 			NdefMessage ndef = new NdefMessage(new NdefRecord[]{primary, secret});
 			return ndef;
@@ -263,15 +194,7 @@ public class PmTag {
 			return null;
 		}
     }
-    
-    public void readSecret() throws Exception
-    {
-    	MifareClassic mf = MifareClassic.get(tag);
-    	auth(mf, mySector[0]);
-    	byte[] block = mf.readBlock(mf.sectorToBlock(mySector[0]));
-    	secret = new String(block, Encoding.US_ASCII.toString());
-    }
-    
+        
 	public int getCode() {
 		return code;
 	}
@@ -280,11 +203,11 @@ public class PmTag {
 		this.code = code;
 	}
 
-	public String getSecret() {
+	public byte[] getSecret() {
 		return secret;
 	}
 
-	public void setSecret(String secret) {
+	public void setSecret(byte[] secret) {
 		this.secret = secret;
 	}
 
@@ -294,5 +217,11 @@ public class PmTag {
 
 	public void setSign(String sign) {
 		this.sign = sign;
+	}
+	public byte[] getUid() {
+		return uid;
+	}
+	public void setUid(byte[] uid) {
+		this.uid = uid;
 	}
 }

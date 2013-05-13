@@ -24,14 +24,14 @@ import com.esp.common.handler.AlertHandler;
 
 public class NfcActivity extends BaseActivity{
 	private static final String TAG = "NfcActivity";
-	public static final String TARGET_DATA = "target_data";
 	
 	//NFC関係
 	private NfcAdapter nfcAdapter;
 	private PendingIntent pendingIntent;
 	private IntentFilter[] filters;
 	private String[][] techs;
-	private NdefMessage targetData;
+
+	private TempData tempData;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
@@ -52,6 +52,8 @@ public class NfcActivity extends BaseActivity{
 					new String[]{NdefFormatable.class.getName()} };
 		}
 		
+		tempData = TempData.getInstance(this);
+		
 		Button btCancel = (Button)findViewById(R.id.bt_cancel);
 		btCancel.setOnClickListener(btCancelClick);
 	}
@@ -68,11 +70,6 @@ public class NfcActivity extends BaseActivity{
 		super.onPause();
 		if(nfcAdapter != null)
 			nfcAdapter.disableForegroundDispatch(this);
-	}
-	
-	@Override
-	protected void onStop() {
-		super.onStop();
 	}
 	
 	@Override
@@ -101,9 +98,11 @@ public class NfcActivity extends BaseActivity{
 			showPleaseLogin();
 			return;
 		}
+		if(tempData.getNfcTag()==null){
+			return;
+		}
 		
 		Intent it = getIntent();
-		targetData = it.getParcelableExtra(TARGET_DATA);
 		TextView tvTitle = (TextView)findViewById(R.id.tv_title);
 		tvTitle.setText(it.getStringExtra(Intent.EXTRA_TITLE));
 	}
@@ -127,18 +126,19 @@ public class NfcActivity extends BaseActivity{
 		AsyncTask<Tag, Void, Boolean> atask = new AsyncTask<Tag, Void, Boolean>(){
 			@Override
 			protected Boolean doInBackground(Tag... params) {
+				NdefMessage ndef = tempData.getNfcTag().getNdefMessage(NfcActivity.this, params[0]);
 				try {
 					AlertHandler.wait(100);
 					if(NdefFormatable.get(params[0]) != null){
 						NdefFormatable nf = NdefFormatable.get(params[0]);
 						nf.connect();
-						nf.format(targetData);
+						nf.format(ndef);
 						nf.close();
 					}else if(Ndef.get(params[0]) != null){
-						Ndef ndef = Ndef.get(params[0]);
-						ndef.connect();
-						ndef.writeNdefMessage(targetData);
-						ndef.close();
+						Ndef nf = Ndef.get(params[0]);
+						nf.connect();
+						nf.writeNdefMessage(ndef);
+						nf.close();
 					}
 					return true;
 				}catch (Exception e) {
@@ -150,14 +150,14 @@ public class NfcActivity extends BaseActivity{
 			@Override
 			protected void onPostExecute(Boolean result) {
 				if(result){
-					targetData= null;
+					tempData.setNfcTag(null);
 					showCompleteMessage();
 				}else{
 					Message.obtain(alert, AlertHandler.ID_SHOW_DLG, R.string.tf_msg_failed, 0).sendToTarget();
 				}
 			}
 		};
-		if(targetData!=null){
+		if(tempData.getNfcTag()!=null){
 			Message.obtain(alert, AlertHandler.ID_SHOW_MSG, R.string.tf_writing, 0).sendToTarget();
 			atask.execute(new Tag[]{tag});
 		}

@@ -14,7 +14,7 @@ public class Venue {
 	
 	private int id;
 	private String name;
-	
+
 	public Venue() {
 	}
 	

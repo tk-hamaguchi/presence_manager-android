@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 public class VenueDB extends SQLiteOpenHelper {
-	private static final int DB_VERSION = 12;
+	private static final int DB_VERSION = 15;
 	public static final String ADMIN_DB = "admin.db";
 	public static final String USER_DB = "user.db";
 	private SQLiteDatabase db;
@@ -43,19 +43,32 @@ public class VenueDB extends SQLiteOpenHelper {
 				}catch(Exception ex){
 					
 				}
+				try{
+					db.execSQL("drop table nfc_tags");
+				}catch(Exception ex){
+					
+				}
 				db.execSQL(String.format("create table venues (%s)",
 						android.provider.BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"+
 								"id INTEGER,"+
-								"name TEXT "
+								"name TEXT"+
+								"secret STRING"
 								));
 				
 				db.execSQL(String.format("create table seats (%s)",
 						android.provider.BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"+
 								"id INTEGER,"+
 								"venue_id INTEGER,"+
-								"name TEXT,"+
+								"name TEXT"
+								));
+				
+				db.execSQL(String.format("create table nfc_tags (%s)",
+						android.provider.BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"+
+								"id INTEGER,"+
 								"sign TEXT,"+
-								"secret TEXT"
+								"secret TEXT,"+
+								"issuer_type INTEGER,"+
+								"issuer_id INTEGER"
 								));
 				
 				db.execSQL(String.format("create table seminars (%s)",

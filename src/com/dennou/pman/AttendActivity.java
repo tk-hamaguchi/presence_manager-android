@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
+import android.nfc.Tag;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -53,7 +54,14 @@ public class AttendActivity extends BaseActivity{
 		Log.d(TAG, "onStart:" + intent.getAction());
 		if(NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())){
 			if(task==null || task.getStatus()==Status.FINISHED)
-				handleNdef(intent);
+				parseNdef(intent);
+		
+			if(pmTag != null){
+	        	handlePmTag(pmTag);
+	        	return;
+			}else{
+				alert.obtainMessage(AlertHandler.ID_SHOW_DLG, R.string.at_msg_invalid_tag, 0).sendToTarget();
+			}
 		}
 	}
 	
@@ -64,17 +72,21 @@ public class AttendActivity extends BaseActivity{
 			dialog.dismiss();
 	}
 	
-	private void handleNdef(Intent intent){
+	private void parseNdef(Intent intent){
         Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
         if (rawMsgs != null) {
             for (int i = 0; i < rawMsgs.length; i++) {
                 NdefMessage msg = (NdefMessage) rawMsgs[i];
                 Log.d(TAG, msg.toString());
                 pmTag = PmTag.get(msg);
-                if(pmTag!=null){
-                	handlePmTag(pmTag);
-                }
             }
+        }
+        
+		Tag tag = (Tag)intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        if(tag != null && pmTag!=null){
+        	pmTag.setUid(tag.getId());
+        }else{
+        	pmTag = null;
         }
 	}
 	
@@ -152,7 +164,7 @@ public class AttendActivity extends BaseActivity{
 	};
 	
 	private void attend(PmTag pmTag){
-		PostAttendTask task = new PostAttendTask(this, pmTag.getCode(), pmTag.getSign(), pmTag.getSecret()){
+		PostAttendTask task = new PostAttendTask(this, pmTag.getCode(), pmTag.getSign(), pmTag.getUid(), pmTag.getSecret()){
 			@Override
 			protected void onPostExecute(Boolean result) {
 				if(result){

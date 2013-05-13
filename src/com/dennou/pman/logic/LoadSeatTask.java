@@ -15,6 +15,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.dennou.pman.data.NfcTag;
 import com.dennou.pman.data.Seat;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Var;
@@ -22,8 +23,11 @@ import com.dennou.pman.data.VenueDB;
 
 public class LoadSeatTask extends AsyncTask<String, Void, Boolean> {
 	private final static String TAG = "LoadSeatTask";
+	
 	private Context context;
 	private List<Seat> seatList;
+	private List<NfcTag> nfcTagList;
+	
 	private int venueId;
 	private int statusCode;
 	
@@ -36,6 +40,8 @@ public class LoadSeatTask extends AsyncTask<String, Void, Boolean> {
 		try {
 			DefaultHttpClient client = new DefaultHttpClient();
 			seatList = new ArrayList<Seat>();
+			nfcTagList = new ArrayList<NfcTag>();
+			
 			String uriFormat = Var.getUri(Var.SEAT_URI, context);
 			String uri = String.format(uriFormat, venueId);
 			HttpGet get = new HttpGet(uri);
@@ -57,18 +63,23 @@ public class LoadSeatTask extends AsyncTask<String, Void, Boolean> {
 	        JSONObject venueObj = json.getJSONObject("venue");
 			int venueId= venueObj.getInt("id");
 			//Seat
-			JSONArray nfcTagArray = json.getJSONArray("nfc_tag");
-			Log.d(TAG, "nfc_tag count=" + nfcTagArray.length());
+			JSONArray nfcTagArray = json.getJSONArray("seat");
+			Log.d(TAG, "seat count=" + nfcTagArray.length());
 			for(int i=0;i<nfcTagArray.length(); i++){
-				JSONObject obj = nfcTagArray.getJSONObject(i);
-				int id = obj.getInt("code");
-				String name = obj.getString("name");
-				String sequence = obj.getString("secret");
-				String sign = obj.getString("sign");
-				Seat seat = new Seat(id, name, sequence, sign);
+				JSONObject seatObj = nfcTagArray.getJSONObject(i);
+				int id = seatObj.getInt("id");
+				String name = seatObj.getString("name");
+				Seat seat = new Seat(id, name);
 				seat.setVenueId(venueId);
 				Log.d(TAG, venueId + seat.getId() + seat.getName());
 				seatList.add(seat);
+				
+				JSONObject nfcTagObj = seatObj.getJSONObject("nfc_tag");
+				NfcTag nfcTag = new NfcTag(nfcTagObj.getInt("id"), 
+						nfcTagObj.getString("sign"), nfcTagObj.getString("secret"));
+				nfcTag.setIssuerType(NfcTag.ISSUER_TYPE_SEAT);
+				nfcTag.setIssuerId(seat.getId());
+				nfcTagList.add(nfcTag);
 			}
 			
 			VenueDB db = new VenueDB(context, VenueDB.ADMIN_DB); 
@@ -77,6 +88,13 @@ public class LoadSeatTask extends AsyncTask<String, Void, Boolean> {
 				Seat.delete(db.getDb(), venueId);
 				for(Seat seat:seatList){
 					seat.insert(db.getDb());
+				}
+				for(NfcTag nfcTag:nfcTagList){
+					if(NfcTag.find(db.getDb(), nfcTag.getId())!=null){
+						nfcTag.update(db.getDb());
+					}else{
+						nfcTag.insert(db.getDb());
+					}
 				}
 			}finally{
 				db.closeWithoutCommit();

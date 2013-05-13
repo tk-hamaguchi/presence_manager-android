@@ -10,7 +10,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-public class Seminar {
+public class Seminar{
 	private static final String TABLE = "seminars";
 	private static final String ID  = "id";
 	private static final String NAME = "name";
@@ -20,8 +20,10 @@ public class Seminar {
 	private static final String CLOSED_AT = "closed_at";
 	private static final String DESCRIPTION = "description";
 	private static final String URL = "url";
+	
 	private static final String VENUE_NAME = "venue_name";
 	private static final String SEAT_NAME = "seat_name";
+	
 	private static final String NFC_TAG_ID = "nfc_tag_id";
 	private static final String NFC_TAG_SECRET = "nfc_tag_secret";
 	private static final String NFC_TAG_SIGN = "nfc_tag_sign";
@@ -35,6 +37,8 @@ public class Seminar {
 	private Date closedAt;
 	private String description;
 	private String url;
+	
+	//出席記録用
 	private String venueName;
 	private String seatName;
 	//NFC用

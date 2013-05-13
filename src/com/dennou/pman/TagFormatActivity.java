@@ -5,7 +5,6 @@ import java.util.List;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.nfc.NdefMessage;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -19,13 +18,13 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 
+import com.dennou.pman.data.NfcTag;
 import com.dennou.pman.data.Seat;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Venue;
 import com.dennou.pman.data.VenueDB;
 import com.dennou.pman.logic.LoadSeatTask;
 import com.dennou.pman.logic.LoadVenueTask;
-import com.dennou.pman.nfc.PmTag;
 import com.esp.common.handler.AlertHandler;
 
 public class TagFormatActivity extends BaseActivity{
@@ -34,11 +33,14 @@ public class TagFormatActivity extends BaseActivity{
 	//Roomデータ
 	private ArrayAdapter<Venue> aaVenue;
 	private ArrayAdapter<Seat> aaSeat;
+	private TempData tempData;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_tag_format);
+		
+		tempData = TempData.getInstance(this);
 		
 		//List
 		aaVenue = new ArrayAdapter<Venue>(this, android.R.layout.simple_list_item_1);
@@ -50,6 +52,7 @@ public class TagFormatActivity extends BaseActivity{
 		ListView lvSeat = (ListView)findViewById(R.id.lv_seat);
 		lvSeat.setAdapter(aaSeat);
 		lvSeat.setOnItemClickListener(lvItemClick);
+		
 		
 		Button btRefresh = (Button)findViewById(R.id.bt_room_refresh);
 		btRefresh.setOnClickListener(btRefreshClick);
@@ -165,6 +168,17 @@ public class TagFormatActivity extends BaseActivity{
 		task.execute(new String[]{});
 	}
 	
+	private NfcTag loadNfcTag(int seatId){
+		VenueDB db = new VenueDB(this, VenueDB.ADMIN_DB);
+		try{
+			db.setReadableDb();
+			NfcTag nfcTag =  NfcTag.findByIssuer(db.getDb(), NfcTag.ISSUER_TYPE_SEAT, seatId);
+			return nfcTag;
+		}finally{
+			db.closeWithoutCommit();
+		}
+	}
+	
 	private void showPleaseLogin(){
 		AlertDialog.Builder ab= new AlertDialog.Builder(this);
 		ab.setPositiveButton(R.string.c_ok, new DialogInterface.OnClickListener() {
@@ -183,10 +197,11 @@ public class TagFormatActivity extends BaseActivity{
 		@Override
 		public void onItemClick(AdapterView<?> av, View v, int position, long id) {
 			Seat seat = aaSeat.getItem(position);
-			NdefMessage ndef = PmTag.getNdefMessage(TagFormatActivity.this, seat);
+			NfcTag nfcTag = loadNfcTag(seat.getId());
+			tempData.setNfcTag(nfcTag);
+			
 			Intent it = new Intent(TagFormatActivity.this, NfcActivity.class);
 			it.putExtra(Intent.EXTRA_TITLE, seat.getName());
-			it.putExtra(NfcActivity.TARGET_DATA, ndef);
 			startActivity(it);
 		}
 	};

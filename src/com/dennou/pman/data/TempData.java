@@ -1,5 +1,7 @@
 package com.dennou.pman.data;
 
+import com.dennou.pman.nfc.INfcTag;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -14,6 +16,7 @@ public class TempData {
 	private String authToken;
 	private String account;
 	private String host;
+	private INfcTag nfcTag;
 	
 	private TempData(Context context) {
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
@@ -59,5 +62,13 @@ public class TempData {
 
 	public void setHost(String host) {
 		this.host = host;
+	}
+
+	public INfcTag getNfcTag() {
+		return nfcTag;
+	}
+
+	public void setNfcTag(INfcTag nfcTag) {
+		this.nfcTag = nfcTag;
 	}
 }

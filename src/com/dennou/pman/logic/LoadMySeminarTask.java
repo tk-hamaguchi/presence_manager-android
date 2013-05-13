@@ -14,6 +14,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.dennou.pman.data.NfcTag;
 import com.dennou.pman.data.Seminar;
 import com.dennou.pman.data.TempData;
 import com.dennou.pman.data.Var;
@@ -23,7 +24,8 @@ public class LoadMySeminarTask extends AsyncTask<String, Void, Boolean> {
 	private final static String TAG = "LoadSeminarTask";
 	private Context context;
 	
-    protected ArrayList<Seminar> list;
+    protected ArrayList<Seminar> seminarList;
+    private ArrayList<NfcTag> nfcTagList;
 	protected int statusCode;
 	
 	public LoadMySeminarTask(Context context) {
@@ -52,7 +54,8 @@ public class LoadMySeminarTask extends AsyncTask<String, Void, Boolean> {
 	        JSONObject json = new JSONObject(body);
 			
 			//Seminar
-	        list = new ArrayList<Seminar>();
+	        seminarList = new ArrayList<Seminar>();
+	        nfcTagList = new ArrayList<NfcTag>();
 			JSONArray seminarArray = json.getJSONArray("seminar");
 			for(int i=0; i<seminarArray.length(); i++){
 				JSONObject seminarObj = seminarArray.getJSONObject(i).getJSONObject("seminar");
@@ -68,13 +71,14 @@ public class LoadMySeminarTask extends AsyncTask<String, Void, Boolean> {
 
 				JSONObject venueObj = seminarArray.getJSONObject(i).getJSONObject("venue");
 				seminar.setVenueName(venueObj.getString("name"));
+				seminarList.add(seminar);
 				
 				JSONObject nfcTagObj = seminarArray.getJSONObject(i).getJSONObject("nfc_tag");
-				seminar.setNfcTagId(nfcTagObj.getInt("code"));
-				seminar.setNfcTagSecret(nfcTagObj.getString("secret"));
-				seminar.setNfcTagSign(nfcTagObj.getString("sign"));
-				
-				list.add(seminar);
+				NfcTag nfcTag = new NfcTag(nfcTagObj.getInt("id"), 
+						nfcTagObj.getString("sign"), nfcTagObj.getString("secret"));
+				nfcTag.setIssuerType(NfcTag.ISSUER_TYPE_SEMINAR);
+				nfcTag.setIssuerId(seminar.getId());
+				nfcTagList.add(nfcTag);
 			}
 			saveDb();
 			return Boolean.TRUE;
@@ -88,8 +92,15 @@ public class LoadMySeminarTask extends AsyncTask<String, Void, Boolean> {
 		try{
 			db.setWritableDb();
 			Seminar.deleteAll(db.getDb());
-			for(Seminar seminar:list){
+			for(Seminar seminar:seminarList){
 				seminar.insert(db.getDb());
+			}
+			for(NfcTag nfcTag:nfcTagList){
+				if(NfcTag.find(db.getDb(), nfcTag.getId())!=null){
+					nfcTag.update(db.getDb());
+				}else{
+					nfcTag.insert(db.getDb());
+				}
 			}
 		}finally{
 			db.closeWithoutCommit();

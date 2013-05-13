@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Base64;
 import android.util.Log;
 
 import com.dennou.pman.data.Seat;
@@ -25,12 +26,14 @@ public class PostAttendTask extends AsyncTask<String, Void, Boolean> {
 	private int statusCode;
 	private int code;
 	private String sign;
-	private String secret;
+	private byte[] uid;
+	private byte[] secret;
 	
-	public PostAttendTask(Context context, int code, String sign, String secret) {
+	public PostAttendTask(Context context, int code, String sign, byte[]uid, byte[] secret) {
 		this.context = context;
 		this.code = code;
 		this.sign = sign;
+		this.uid = uid;
 		this.secret = secret;
 	}
 	@Override
@@ -42,7 +45,8 @@ public class PostAttendTask extends AsyncTask<String, Void, Boolean> {
 			JSONObject json = new JSONObject();
 			json.put("code", code);
 			json.put("sign", sign);
-			json.put("secret", secret);
+			json.put("secret", Base64.encodeToString(secret,Base64.DEFAULT|Base64.NO_WRAP|Base64.URL_SAFE));
+			json.put("uid", Base64.encodeToString(uid,Base64.DEFAULT|Base64.NO_WRAP|Base64.URL_SAFE));
 			
 			StringEntity entity = new StringEntity(json.toString());
 			entity.setContentType("application/json");
@@ -53,7 +57,7 @@ public class PostAttendTask extends AsyncTask<String, Void, Boolean> {
 			String bearer = String.format(Var.HEADER_BEARER, TempData.getInstance(context).getAuthToken());
 			post.setHeader(Var.HEADER_AUTHORIZATION, bearer);
 			post.setEntity(entity);
-			Log.d(TAG, String.format("code=%s sign=%s secret=%s", code, sign, secret));
+			Log.d(TAG, String.format("json=%s", code, sign, json.toString()));
 			
 			HttpResponse response = client.execute( post );
 			statusCode = response.getStatusLine().getStatusCode();

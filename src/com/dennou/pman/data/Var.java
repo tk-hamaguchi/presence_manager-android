@@ -14,6 +14,7 @@ public class Var {
 	public static final String HEADER_BEARER = "Bearer %s";
 	public static final String UA = "PmClient";
 	public static final String CHARSET = "utf-8";
+	public static final String SIGN_LOGIC = "HmacSHA1";
 	
 	//ログイン用
 	public static final String AUTH_URI = "%s://%s/users/auth/twitter?force_login=true";
@@ -49,6 +50,10 @@ public class Var {
 	public static String getUri(String uri, Context context){
 		TempData tempData = TempData.getInstance(context);
 		String host = tempData.getHost();
+		return String.format(uri, SV_SCHEME, host);
+	}
+	
+	public static String getUriWithHost(String uri, String host){
 		return String.format(uri, SV_SCHEME, host);
 	}
 }
