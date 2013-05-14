@@ -45,8 +45,8 @@ public class PostAttendTask extends AsyncTask<String, Void, Boolean> {
 			JSONObject json = new JSONObject();
 			json.put("code", code);
 			json.put("sign", sign);
-			json.put("secret", Base64.encodeToString(secret,Base64.DEFAULT|Base64.NO_WRAP|Base64.URL_SAFE));
-			json.put("uid", Base64.encodeToString(uid,Base64.DEFAULT|Base64.NO_WRAP|Base64.URL_SAFE));
+			json.put("secret", Base64.encodeToString(secret,Base64.DEFAULT|Base64.NO_WRAP));
+			json.put("uid", Base64.encodeToString(uid,Base64.DEFAULT|Base64.NO_WRAP));
 			
 			StringEntity entity = new StringEntity(json.toString());
 			entity.setContentType("application/json");
